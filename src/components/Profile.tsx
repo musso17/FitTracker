@@ -350,14 +350,17 @@ const Profile: React.FC<ProfileProps> = ({
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify({ userId: userKey })
                                         });
-                                        const data = await response.json();
-                                        if (data.success) {
-                                            // Toast is handled by internal notification logic if possible or just alert
+                                        const text = await response.text();
+                                        let data;
+                                        try { data = JSON.parse(text); } catch(e) { data = { error: text }; }
+                                        
+                                        if (response.ok && data.success) {
+                                            alert('✅ Solicitud enviada. Espera unos segundos.');
                                         } else {
-                                            alert(data.error || 'Error al enviar prueba');
+                                            alert('❌ Error del servidor: ' + (data.error || 'Desconocido'));
                                         }
-                                    } catch (err) {
-                                        alert('Error de conexión');
+                                    } catch (err: any) {
+                                        alert('❌ Error de conexión: ' + err.message);
                                     }
                                 }}
                                 className="w-full py-3 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all active:scale-95"
