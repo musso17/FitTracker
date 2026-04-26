@@ -3,7 +3,7 @@ import {
     IconTarget, IconCalendar, IconTrophy, 
     IconEdit, IconTrash, IconDumbbell, IconX, IconChevronRight, IconActivity, IconInfoCircle
 } from '../constants';
-import type { TrainingBlock, TrainingLog } from '../types';
+import type { TrainingLog } from '../types';
 import { ANALYTICS_DOCS, predictGoalDate } from './Common';
 
 interface DashboardProps {

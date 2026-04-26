@@ -59,7 +59,7 @@ export default function App() {
     const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
 
     // --- NOTIFICATIONS ---
-    const { notificationSettings, setNotificationSettings, requestPermission, notify } = useNotifications(userSession?.user?.id || 'guest', storageKey, showToast);
+    const { notificationSettings, requestPermission, notify } = useNotifications(userSession?.user?.id || 'guest', storageKey, showToast);
 
     // --- INTELLIGENCE ---
     const intel = useIntelligence(logs, PLAN_BLOCKS, currentStreak);
@@ -254,9 +254,9 @@ export default function App() {
                     )}
                     {activeTab === 'dashboard' && (
                         <Dashboard 
-                            dashboardStats={dashboardStats} dashboardInsights={dashboardInsights} coachInsights={coachInsights} 
-                            logs={logs} PLAN_BLOCKS={PLAN_BLOCKS} ANA_PLAN={ANA_PLAN} MARCELO_PLAN={MARCELO_PLAN} 
-                            handleEditLog={handleEditLog} handleDeleteLog={deleteLog} selectedExerciseId={selectedExerciseId} setSelectedExerciseId={setSelectedExerciseId} 
+                            dashboardStats={dashboardStats} 
+                            logs={logs} 
+                            handleEditLog={handleEditLog} handleDeleteLog={deleteLog} 
                             intel={intel}
                         />
                     )}
