@@ -348,7 +348,7 @@ const Profile: React.FC<ProfileProps> = ({
                                         const response = await fetch('/api/test-push', {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ userId: userKey })
+                                            body: JSON.stringify({ userId: profile.id })
                                         });
                                         const text = await response.text();
                                         let data;
