@@ -178,7 +178,7 @@ export default function App() {
             
             // Trigger Immediate Achievement Push
             if (recap.achievements.length > 0 && notificationSettings.enabled) {
-                fetch('/.netlify/functions/send-notification', {
+                fetch('/api/send-notification', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

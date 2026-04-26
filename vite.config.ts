@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/.netlify/functions': {
-        target: 'https://anarutina2026.netlify.app',
+      '/api': {
+        target: 'http://localhost:3000', // Default for 'vercel dev'
         changeOrigin: true,
       }
     }

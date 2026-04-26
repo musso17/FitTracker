@@ -382,7 +382,7 @@ const Profile: React.FC<ProfileProps> = ({
                 {/* Versión y Update */}
                 <div className="pt-8 pb-4 text-center space-y-4">
                     <div className="flex flex-col items-center gap-1 opacity-40">
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Ana App v1.0.1</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Ana App v1.1.0</span>
                         <span className="text-[8px] font-bold text-slate-300">Build 2026.04.26</span>
                     </div>
                     <button 

@@ -1,4 +1,4 @@
-// Simple Service Worker for PWA - v1.0.1 (Force Update)
+// Simple Service Worker for PWA - v1.1.0 (Vercel Migration)
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });

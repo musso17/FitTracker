@@ -52,7 +52,7 @@ export const useNotifications = (userId: string, storageKey: (k: string) => stri
             });
 
             // Phase 2: Save to Netlify Backend
-            const response = await fetch('/.netlify/functions/save-subscription', {
+            const response = await fetch('/api/save-subscription', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, subscription })
