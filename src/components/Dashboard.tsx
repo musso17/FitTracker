@@ -348,7 +348,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                                         {log.gymData?.progress && (
                                             <div className="space-y-3">
                                                 {Object.entries(log.gymData.progress).map(([exId, sets]: [string, any]) => {
-                                                    const exName = log.gymData.exercises?.find((e: any) => e.id === exId)?.name || 'Ejercicio';
+                                                    const exName = log.gymData?.exercises?.find((e: any) => e.id === exId)?.name || 'Ejercicio';
                                                     const completedSets = Array.isArray(sets) ? sets.filter((s: any) => s.completed) : [];
                                                     if (completedSets.length === 0) return null;
                                                     

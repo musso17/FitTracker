@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
     IconTarget, IconUser, IconBell, IconPlus, IconTrash, 
-    IconDumbbell, IconEdit, IconSync,
+    IconDumbbell, IconSync,
     IconLogout,
     ICON_MAP, COLOR_OPTIONS, VISUAL_OPTIONS, ACTIVITY_TYPES 
 } from '../constants';
@@ -15,9 +15,7 @@ interface ProfileProps {
     setEditingBlock: (block: any | null) => void;
     savePlanBlocks: (blocks: TrainingBlock[]) => void;
     setIsProfileModalOpen: (open: boolean) => void;
-    notificationSettings: any;
     requestNotificationPermission: () => Promise<void>;
-    updateNotificationSettings: (settings: any) => void;
     userKey: string;
     planBlocksOverride: any;
     setPlanBlocksOverride: (val: any) => void;
@@ -33,9 +31,7 @@ const Profile: React.FC<ProfileProps> = ({
     setEditingBlock,
     savePlanBlocks,
     setIsProfileModalOpen,
-    notificationSettings,
     requestNotificationPermission,
-    updateNotificationSettings,
     userKey,
     planBlocksOverride,
     setPlanBlocksOverride,

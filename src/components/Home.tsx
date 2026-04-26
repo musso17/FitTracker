@@ -1,10 +1,10 @@
 import React from 'react';
 import { 
-    IconFlame, IconChevronRight, IconDumbbell, IconListTodo, IconCheckCircle, IconActivity, IconTarget, IconInfoCircle, IconX,
+    IconFlame, IconChevronRight, IconDumbbell, IconListTodo, IconCheckCircle, IconInfoCircle, IconX,
     getColorClasses
 } from '../constants';
 import type { TrainingBlock } from '../types';
-import { calculateACWR, calculateRecoveryScore, ANALYTICS_DOCS } from './Common';
+import { calculateRecoveryScore, ANALYTICS_DOCS } from './Common';
 
 interface HomeProps {
     currentUserName: string;
@@ -36,7 +36,6 @@ const Home: React.FC<HomeProps> = ({
     const todayLogs = logs.filter(l => l.date === todayStr);
     const hasTrainedToday = todayLogs.some(l => l.blockId.startsWith('ana_') || l.blockId.startsWith('mar_'));
 
-    const acwr = calculateACWR(logs);
     const wellness = wellnessOverride || calculateRecoveryScore(logs, currentStreak);
 
     const getDaysAgo = (dateStr: string) => {

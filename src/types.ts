@@ -38,15 +38,15 @@ export interface TrainingLog {
     id: number;
     date: string;
     blockId: string;
-    blockTitle: string;
     userId: string;
-    duration: number;
-    exercises: any; // Guardado como JSON en DB
     gymData?: {
-        exercises: SessionExercise[];
+        exercises: any[];
+        progress: any;
+        skipped?: any;
     };
-    surfMinutes?: number;
-    muayThaiMinutes?: number;
+    surfData?: any;
+    muayThaiData?: any;
+    activityData?: any;
 }
 
 export interface UserProfile {

@@ -1,11 +1,9 @@
 import { useMemo } from 'react';
 import { 
-    calculateACWR, 
     calculateRecoveryScore, 
     calculateMuscleBalance, 
     detectBestDay, 
     calculateConsistency, 
-    predictGoalDate, 
     getRecommendedNextBlock 
 } from '../components/Common';
 import type { TrainingLog, TrainingBlock } from '../types';

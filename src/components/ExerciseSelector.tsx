@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { IconX, IconChevronRight, IconActivity } from '../constants';
-import { supabase } from '../utils/supabase';
 
 interface ExerciseSelectorProps {
     userKey: string;

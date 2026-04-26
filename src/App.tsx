@@ -264,8 +264,8 @@ export default function App() {
                     {activeTab === 'profile' && (
                         <Profile 
                             profile={profile} currentUserName={currentUserName} planBlocks={PLAN_BLOCKS} editingBlock={editingPlanBlock} setEditingBlock={setEditingPlanBlock} 
-                            savePlanBlocks={savePlanBlocks} setIsProfileModalOpen={setIsProfileModalOpen} notificationSettings={notificationSettings} 
-                            requestNotificationPermission={requestPermission} updateNotificationSettings={setNotificationSettings} userKey={userKey} 
+                            savePlanBlocks={savePlanBlocks} setIsProfileModalOpen={setIsProfileModalOpen} 
+                            requestNotificationPermission={requestPermission} userKey={userKey} 
                             planBlocksOverride={planBlocksOverride} setPlanBlocksOverride={setPlanBlocksOverride} handleLogout={logout}
                             saveProfile={saveProfile}
                         />
