@@ -9,12 +9,12 @@ function useLongPress(callback: () => void, ms = 400, interval = 150) {
   const timerRef = useRef<any>(null);
   const intervalRef = useRef<any>(null);
   const pressed = useRef(false);
+  const isTouch = useRef(false);
 
   const start = useCallback((_e: any) => {
     if (pressed.current) return;
     pressed.current = true;
     
-    // Ejecutar inmediatamente para respuesta instantánea
     callback();
     
     timerRef.current = setTimeout(() => {
@@ -29,18 +29,22 @@ function useLongPress(callback: () => void, ms = 400, interval = 150) {
   }, []);
 
   return { 
-    onMouseDown: (e: any) => { if (e.button === 0) start(e); }, 
+    onMouseDown: (e: any) => { 
+        if (isTouch.current) return;
+        if (e.button === 0) start(e); 
+    }, 
     onMouseUp: stop, 
     onMouseLeave: stop, 
     onTouchStart: (e: any) => { 
-        // Solo prevenir si no queremos que el navegador maneje el tap/scroll
-        // Pero para botones de incremento, queremos respuesta inmediata
+        isTouch.current = true;
         if (e.cancelable) e.preventDefault(); 
         start(e); 
     }, 
-    onTouchEnd: stop,
+    onTouchEnd: () => {
+        stop();
+        setTimeout(() => { isTouch.current = false; }, 500);
+    },
     onTouchMove: (_e: any) => {
-        // Si el usuario mueve el dedo (scroll), cancelamos el incremento
         stop();
     }
   };
