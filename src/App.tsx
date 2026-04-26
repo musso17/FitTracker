@@ -48,7 +48,7 @@ export default function App() {
 
     // --- DATA & STATS ---
     const { logs, setLogs, deleteLog, stats, currentStreak } = useTrainingData(userSession, profile, userKey, PLAN_BLOCKS);
-    const { dashboardStats, dashboardInsights, coachInsights } = stats;
+    const { dashboardStats } = stats;
 
     // --- ACTIVE SESSION STATE ---
     const session = useActiveSessionState(PLAN_BLOCKS, logs);
@@ -56,7 +56,6 @@ export default function App() {
     const [restTimer, setRestTimer] = useState({ active: false, seconds: 0, total: 0 });
     const [sessionRecap, setSessionRecap] = useState<any>(null);
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
-    const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
 
     // --- NOTIFICATIONS ---
     const { notificationSettings, requestPermission, notify } = useNotifications(userSession?.user?.id || 'guest', storageKey, showToast);
