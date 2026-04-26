@@ -4,6 +4,7 @@ import type { UserProfile } from '../types';
 
 export const useProfile = (userSession: any) => {
     const [profile, setProfile] = useState<UserProfile>({ 
+        id: '',
         height: 180, weight: 82, strength_goals: {}, 
         notif_enabled: false, notif_time: '07:00',
         notif_settings: { achievements: true, streak: true, summary: true, coach: true, hydration: true }
@@ -15,11 +16,12 @@ export const useProfile = (userSession: any) => {
             try {
                 const { data } = await supabase
                     .from('profiles')
-                    .select('height, weight, strength_goals, notif_enabled, notif_time, notif_settings')
+                    .select('id, height, weight, strength_goals, notif_enabled, notif_time, notif_settings')
                     .eq('id', userSession.user.id)
                     .single();
                 if (data) {
                     setProfile({
+                        id: data.id,
                         height: data.height,
                         weight: data.weight,
                         strength_goals: data.strength_goals || {},
@@ -27,9 +29,13 @@ export const useProfile = (userSession: any) => {
                         notif_time: data.notif_time ? data.notif_time.slice(0, 5) : '07:00',
                         notif_settings: data.notif_settings || { achievements: true, streak: true, summary: true, coach: true, hydration: true }
                     });
+                } else {
+                    // Si no hay datos, al menos setear el ID
+                    setProfile(prev => ({ ...prev, id: userSession.user.id }));
                 }
             } catch (e) {
                 console.error("Profile fetch error:", e);
+                setProfile(prev => ({ ...prev, id: userSession.user.id }));
             }
         }
         fetchProfile();
@@ -50,7 +56,7 @@ export const useProfile = (userSession: any) => {
                     notif_settings: newProfile.notif_settings
                 });
             if (!error) {
-                setProfile(newProfile);
+                setProfile({ ...newProfile, id: userSession.user.id });
                 return true;
             }
         } catch (e) {

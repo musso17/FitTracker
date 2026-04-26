@@ -50,6 +50,7 @@ export interface TrainingLog {
 }
 
 export interface UserProfile {
+    id: string;
     height: number;
     weight: number;
     strength_goals: Record<string, number>;
