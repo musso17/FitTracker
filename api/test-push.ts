@@ -60,9 +60,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         return res.status(200).json({ success: true, message: 'Test notification sent' });
     } catch (err: any) {
+        let details = err.message;
+        if (err.statusCode) {
+            details = `Push Service Error (${err.statusCode}): ${err.body || err.message}`;
+        }
         return res.status(200).json({ 
             success: false, 
-            error: `Error interno: ${err.message}` 
+            error: `Error interno: ${details}` 
         });
     }
 }
