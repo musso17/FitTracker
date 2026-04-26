@@ -341,6 +341,31 @@ const Profile: React.FC<ProfileProps> = ({
                             ))}
                         </div>
 
+                        <div className="pt-4 border-t border-slate-100">
+                            <button 
+                                onClick={async () => {
+                                    try {
+                                        const response = await fetch('/api/test-push', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ userId: userKey })
+                                        });
+                                        const data = await response.json();
+                                        if (data.success) {
+                                            // Toast is handled by internal notification logic if possible or just alert
+                                        } else {
+                                            alert(data.error || 'Error al enviar prueba');
+                                        }
+                                    } catch (err) {
+                                        alert('Error de conexión');
+                                    }
+                                }}
+                                className="w-full py-3 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all active:scale-95"
+                            >
+                                🧪 Probar Notificación Push (Servidor)
+                            </button>
+                        </div>
+
                         <div className="pt-2">
                             <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
                                 Reglas: Máx 2 notif/día · Nunca después de las 22:00
