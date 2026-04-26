@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fit & Surf Tracker</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        body {
+            background-color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom, 24px);
+        }
+
+        .pt-safe {
+            padding-top: env(safe-area-inset-top, 16px);
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .animate-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .slide-in-from-right {
+            animation: slideInRight 0.3s ease-out;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo } = React;
+
+        const getRelativeDate = (daysAgo) => {
+            const date = new Date();
+            date.setDate(date.getDate() - daysAgo);
+            return date.toISOString().split('T')[0];
+        };
+        const isWithinLast7Days = (date) => (Math.abs(new Date() - new Date(date)) / (1000 * 60 * 60 * 24)) <= 7;
+
+        // --- ICONS ---
+        const IconDumbbell = ({ size = 20, className = "" }) => <i className={`fas fa-dumbbell ${className}`} style={{ fontSize: size }}></i>;
+        const IconWaves = ({ size = 20, className = "" }) => <i className={`fas fa-water ${className}`} style={{ fontSize: size }}></i>;
+        const IconActivity = ({ size = 20, className = "" }) => <i className={`fas fa-chart-line ${className}`} style={{ fontSize: size }}></i>;
+        const IconFlame = ({ size = 20, className = "" }) => <i className={`fas fa-fire ${className}`} style={{ fontSize: size }}></i>;
+        const IconHeart = ({ size = 20, className = "" }) => <i className={`fas fa-heart ${className}`} style={{ fontSize: size }}></i>;
+        const IconCheckCircle = ({ size = 20, className = "" }) => <i className={`fas fa-check-circle ${className}`} style={{ fontSize: size }}></i>;
+        const IconX = ({ size = 20, className = "" }) => <i className={`fas fa-times ${className}`} style={{ fontSize: size }}></i>;
+        const IconChevronRight = ({ size = 20, className = "" }) => <i className={`fas fa-chevron-right ${className}`} style={{ fontSize: size }}></i>;
+        const IconTarget = ({ size = 20, className = "" }) => <i className={`fas fa-bullseye ${className}`} style={{ fontSize: size }}></i>;
+        const IconAward = ({ size = 20, className = "" }) => <i className={`fas fa-medal ${className}`} style={{ fontSize: size }}></i>;
+        const IconListTodo = ({ size = 20, className = "" }) => <i className={`fas fa-list-check ${className}`} style={{ fontSize: size }}></i>;
+        const IconHome = ({ size = 20, className = "" }) => <i className={`fas fa-home ${className}`} style={{ fontSize: size }}></i>;
+
+        // --- EL PLAN FLEXIBLE ---
+        const PLAN_BLOCKS = [
+            {
+                id: 'b1', title: 'Surf + Core Ligero', icon: IconWaves, color: 'cyan',
+                note: 'Objetivo: Activar core sin fatigar para rendir en el agua.', hasSurf: true,
+                exercises: [
+                    { id: '1', name: 'Plancha frontal', sets: 3, target: '40s', type: 'check' },
+                    { id: '2', name: 'Plancha lateral', sets: 3, target: '30s/lado', type: 'check' },
+                    { id: '3', name: 'Dead bug', sets: 3, target: '12 reps', type: 'check' },
+                    { id: '4', name: 'Bird dog', sets: 3, target: '12 reps', type: 'check' }
+                ]
+            },
+            {
+                id: 'b2', title: 'Glúteos: Fuerza Segura', icon: IconDumbbell, color: 'rose',
+                note: 'DÍA IMPORTANTE. No sacrifiques técnica por peso. Cuida la espalda en RDL.', hasSurf: false,
+                exercises: [
+                    { id: '5', name: 'Hip thrust pesado', sets: 4, target: '8 reps', type: 'weight', tip: 'Aprieta glúteos arriba 1s.' },
+                    { id: '6', name: 'Goblet squat', sets: 4, target: '8 reps', type: 'weight', tip: 'Pecho arriba, baja controlado.' },
+                    { id: '7', name: 'RDL (Peso muerto rumano)', sets: 3, target: '10 reps', type: 'weight', tip: 'Caderas hacia atrás, siente el estiramiento.' },
+                    { id: '8', name: 'Bulgarian split squat', sets: 3, target: '10/lado', type: 'weight', tip: 'Inclina el torso ligeramente adelante.' },
+                    { id: '9', name: 'Abducciones', sets: 3, target: '15 reps', type: 'weight' }
+                ]
+            },
+            {
+                id: 'b3', title: 'Espalda, Remada + Core', icon: IconActivity, color: 'teal',
+                note: 'Mejora postura y remada. Control, no impulso.', hasSurf: false,
+                exercises: [
+                    { id: '10', name: 'Dominadas (asistidas)', sets: 4, target: '6-8 reps', type: 'weight' },
+                    { id: '11', name: 'Remo con barra/mancuerna', sets: 4, target: '10 reps', type: 'weight' },
+                    { id: '12', name: 'Jalón al pecho', sets: 3, target: '10 reps', type: 'weight' },
+                    { id: '13', name: 'Face pulls', sets: 3, target: '15 reps', type: 'weight' },
+                    { id: '14', name: 'Plancha c/ toques', sets: 3, target: '16 toques', type: 'check' },
+                    { id: '15', name: 'Pallof press', sets: 3, target: '12/lado', type: 'weight' },
+                    { id: '16', name: 'Dead bug con peso', sets: 3, target: '10/lado', type: 'weight' },
+                    { id: '17', name: 'Superman hold', sets: 3, target: '40s', type: 'check' }
+                ]
+            },
+            {
+                id: 'b4', title: 'Glúteos: Potencia', icon: IconFlame, color: 'orange',
+                note: 'Construye explosividad (clave para ponerte de pie en la tabla).', hasSurf: false,
+                exercises: [
+                    { id: '18', name: 'Hip thrust moderado', sets: 4, target: '10 reps', type: 'weight' },
+                    { id: '19', name: 'Step-ups con peso', sets: 3, target: '10/lado', type: 'weight' },
+                    { id: '20', name: 'Hip extension', sets: 3, target: '12 reps', type: 'weight' },
+                    { id: '21', name: 'Kettlebell swings', sets: 3, target: '15 reps', type: 'weight', tip: 'El impulso viene de la cadera, no de los brazos.' },
+                    { id: '22', name: 'Kickback (Polea/Máq)', sets: 3, target: '12 reps', type: 'weight' },
+                    { id: '23', name: 'Plancha lateral elevando pierna', sets: 3, target: '30s', type: 'check' },
+                    { id: '24', name: 'Elevaciones de piernas', sets: 3, target: '12 reps', type: 'check' },
+                    { id: '25', name: 'Russian twist', sets: 3, target: '20 reps', type: 'weight' }
+                ]
+            },
+            {
+                id: 'b5', title: 'Surf + Movilidad', icon: IconWaves, color: 'cyan',
+                note: 'Día de mar. Mantén la movilidad ligera.', hasSurf: true,
+                exercises: [
+                    { id: '26', name: 'Movilidad Caderas', sets: 1, target: '5 min', type: 'check' },
+                    { id: '27', name: 'Movilidad Espalda Torácica', sets: 1, target: '5 min', type: 'check' },
+                    { id: '28', name: 'Movilidad Hombros', sets: 1, target: '5 min', type: 'check' }
+                ]
+            },
+            {
+                id: 'b6', title: 'Recuperación / Yoga', icon: IconHeart, color: 'purple',
+                note: 'Recuperación activa. Tómate tu tiempo para respirar.', hasSurf: false,
+                exercises: [
+                    { id: '29', name: 'Sesión Yoga/Estiramientos', sets: 1, target: '30-60m', type: 'check' }
+                ]
+            }
+        ];
+
+        function App() {
+            const [activeTab, setActiveTab] = useState('home');
+            const [logs, setLogs] = useState([]);
+
+            const [activeBlock, setActiveBlock] = useState(null);
+            const [gymProgress, setGymProgress] = useState({});
+            const [surfForm, setSurfForm] = useState({ duration: 60, feeling: 'good' });
+
+            const lastLog = [...logs].reverse()[0];
+            const nextBlockIndex = lastLog ? (PLAN_BLOCKS.findIndex(b => b.id === lastLog.blockId) + 1) % PLAN_BLOCKS.length : 0;
+            const recommendedBlock = PLAN_BLOCKS[nextBlockIndex];
+
+            const dashboardStats = useMemo(() => {
+                const workoutsThisWeek = logs.filter(l => isWithinLast7Days(l.date)).length;
+                const totalSurfMins = logs.reduce((acc, curr) => curr.surfData ? acc + curr.surfData.duration : acc, 0);
+                return {
+                    workoutsThisWeek, totalSurfMins,
+                    unlocked: {
+                        first_surf: totalSurfMins > 0,
+                        consistency: logs.length >= 3,
+                    }
+                };
+            }, [logs]);
+
+            const handleStartBlock = (block) => {
+                setActiveBlock(block);
+                if (block.exercises.length > 0) {
+                    const initialProgress = {};
+                    block.exercises.forEach(ex => initialProgress[ex.id] = Array.from({ length: ex.sets }, () => ({ weight: '', reps: '', completed: false })));
+                    setGymProgress(initialProgress);
+                }
+                setSurfForm({ duration: 60, feeling: 'good' });
+                setActiveTab('active_session');
+                window.scrollTo(0, 0);
+            };
+
+            const handleFinishSession = () => {
+                const newLog = {
+                    id: Date.now(), date: new Date().toISOString().split('T')[0], blockId: activeBlock.id,
+                    ...(activeBlock.hasSurf && { surfData: { ...surfForm } })
+                };
+                setLogs([...logs, newLog]);
+                setActiveBlock(null);
+                setActiveTab('dashboard');
+                window.scrollTo(0, 0);
+            };
+
+            const getColorClasses = (color) => {
+                const map = { cyan: 'bg-cyan-100 text-cyan-600', rose: 'bg-rose-100 text-rose-600', teal: 'bg-teal-100 text-teal-600', orange: 'bg-orange-100 text-orange-600', purple: 'bg-purple-100 text-purple-600' };
+                return map[color] || 'bg-slate-100 text-slate-600';
+            };
+
+            // VIEWS
+            const renderHome = () => (
+                <div className="space-y-6 animate-in pb-24">
+                    <header className="pt-6 pb-2">
+                        <h1 className="text-2xl font-bold text-slate-800">Hola, Ana 👋</h1>
+                        <p className="text-slate-500">Marce hizo esta app para ti.</p>
+                    </header>
+
+                    <section>
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="text-lg font-semibold text-slate-700">Siguiente en tu ciclo</h2>
+                            <span className="text-xs font-bold bg-slate-800 text-white px-3 py-1 rounded-full">Sugerido</span>
+                        </div>
+
+                        <div onClick={() => handleStartBlock(recommendedBlock)} className="bg-white p-5 rounded-2xl shadow-sm border-2 border-slate-800 cursor-pointer active:scale-95 transition-transform">
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block">Bloque actual</span>
+                                    <h3 className="font-bold text-xl text-slate-800">{recommendedBlock.title}</h3>
+                                </div>
+                                <div className={`flex items-center justify-center w-12 h-12 rounded-full ${getColorClasses(recommendedBlock.color)}`}>
+                                    <recommendedBlock.icon size={24} />
+                                </div>
+                            </div>
+                            <p className="text-sm text-slate-500 mt-3 leading-snug">{recommendedBlock.note}</p>
+                            <button className="w-full mt-5 bg-slate-900 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2">
+                                Iniciar Bloque <IconChevronRight size={16} />
+                            </button>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2 className="text-lg font-semibold text-slate-700 mb-3 flex items-center gap-2"><IconListTodo size={18} /> Tu Plan Flexible</h2>
+                        <div className="space-y-3">
+                            {PLAN_BLOCKS.map((block, idx) => (
+                                <div key={block.id} onClick={() => handleStartBlock(block)} className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer ${block.id === recommendedBlock.id ? 'bg-slate-50 border-slate-300' : 'bg-white border-slate-100'}`}>
+                                    <div className="w-6 text-center text-slate-300 font-bold text-lg">{idx + 1}</div>
+                                    <div className={`flex items-center justify-center w-10 h-10 rounded-full ${getColorClasses(block.color)}`}><block.icon size={18} /></div>
+                                    <div className="flex-1">
+                                        <h4 className="font-bold text-slate-800 text-sm">{block.title}</h4>
+                                        <p className="text-[11px] text-slate-500 flex gap-2 mt-1">
+                                            {block.hasSurf && <span>🌊 Surf</span>}
+                                            {block.exercises.length > 0 && <span>💪 {block.exercises.length} Ejercicios</span>}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                </div>
+            );
+
+            const renderActiveSession = () => (
+                <div className="space-y-6 pb-4 animate-in slide-in-from-right">
+                    <header className="sticky top-[-1px] -mx-4 px-4 bg-[#f8fafc]/95 backdrop-blur-xl border-b border-slate-200 z-10 flex items-center justify-between" style={{ paddingTop: 'max(16px, env(safe-area-inset-top))', paddingBottom: '16px' }}>
+                        <div className="flex items-center gap-3">
+                            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${getColorClasses(activeBlock.color)}`}><activeBlock.icon size={18} /></div>
+                            <h2 className="font-bold text-lg text-slate-800 leading-tight">{activeBlock.title}</h2>
+                        </div>
+                        <button onClick={() => setActiveTab('home')} className="w-10 h-10 flex items-center justify-center bg-slate-200 rounded-full text-slate-600"><IconX size={18} /></button>
+                    </header>
+
+                    <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl mx-2 flex gap-3 items-start">
+                        <span className="text-amber-500 mt-0.5">💡</span>
+                        <p className="text-sm text-amber-800 font-medium leading-snug">{activeBlock.note}</p>
+                    </div>
+
+                    {activeBlock.hasSurf && (
+                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-cyan-100 mx-2">
+                            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><IconWaves className="text-cyan-500" size={18} /> Reporte de Surf</h3>
+                            <div className="space-y-5">
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-2">Tiempo en el agua</label>
+                                    <div className="flex items-center gap-4">
+                                        <input type="range" min="20" max="180" step="10" value={surfForm.duration} onChange={(e) => setSurfForm({ ...surfForm, duration: parseInt(e.target.value) })} className="w-full accent-cyan-500" />
+                                        <span className="font-bold text-cyan-600 text-lg w-16 text-right">{surfForm.duration}m</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-2">¿Cómo te sentiste?</label>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        <button onClick={() => setSurfForm({ ...surfForm, feeling: 'struggle' })} className={`py-3 px-4 rounded-xl text-left text-sm font-medium transition-colors ${surfForm.feeling === 'struggle' ? 'bg-cyan-100 text-cyan-800 border-2 border-cyan-500' : 'bg-slate-50 border-2 border-transparent text-slate-600'}`}>🚣‍♀️ Pura remada / Difícil</button>
+                                        <button onClick={() => setSurfForm({ ...surfForm, feeling: 'good' })} className={`py-3 px-4 rounded-xl text-left text-sm font-medium transition-colors ${surfForm.feeling === 'good' ? 'bg-cyan-100 text-cyan-800 border-2 border-cyan-500' : 'bg-slate-50 border-2 border-transparent text-slate-600'}`}>🌊 Agarré un par, bien</button>
+                                        <button onClick={() => setSurfForm({ ...surfForm, feeling: 'awesome' })} className={`py-3 px-4 rounded-xl text-left text-sm font-medium transition-colors ${surfForm.feeling === 'awesome' ? 'bg-cyan-100 text-cyan-800 border-2 border-cyan-500' : 'bg-slate-50 border-2 border-transparent text-slate-600'}`}>🤙 ¡Increíble! / Muy divertida</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeBlock.exercises.length > 0 && (
+                        <div className="space-y-4 mx-2">
+                            <h3 className="font-bold text-slate-800 px-1">Ejercicios de hoy</h3>
+                            {activeBlock.exercises.map((exercise) => (
+                                <div key={exercise.id} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+
+                                    {/* CABECERA SIMPLE (SIN ICONOS) */}
+                                    <div className="mb-4">
+                                        <h4 className="font-bold text-slate-800 text-base">{exercise.name}</h4>
+                                        <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-1 rounded mt-1.5 inline-block">
+                                            Meta: {exercise.sets} series x {exercise.target}
+                                        </span>
+                                        {exercise.tip && <p className="text-xs text-teal-700 mt-2 font-medium italic">💡 {exercise.tip}</p>}
+                                    </div>
+
+                                    {/* REGISTRO DE SETS */}
+                                    <div className="space-y-2 pt-3 border-t border-slate-100">
+                                        {exercise.type === 'weight' && (
+                                            <div className="flex text-[10px] font-bold text-slate-400 px-2 uppercase tracking-wider">
+                                                <span className="w-10 text-center">Set</span>
+                                                <span className="flex-1 text-center">lbs/kg</span>
+                                                <span className="flex-1 text-center">Reps</span>
+                                                <span className="w-12 text-center">✔</span>
+                                            </div>
+                                        )}
+
+                                        {gymProgress[exercise.id]?.map((set, idx) => (
+                                            <div key={idx} className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors ${set.completed ? 'bg-emerald-50' : 'bg-slate-50'}`}>
+                                                <span className="w-10 text-center font-bold text-slate-400 text-sm">{idx + 1}</span>
+                                                {exercise.type === 'weight' ? (
+                                                    <>
+                                                        <input type="number" inputMode="decimal" placeholder="-" value={set.weight} onChange={(e) => setGymProgress(p => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], weight: e.target.value }; return { ...p, [exercise.id]: o } })} disabled={set.completed} className="flex-1 min-w-0 bg-white border border-slate-200 rounded-md py-2.5 text-center text-[16px] focus:ring-2 focus:ring-slate-400 outline-none disabled:bg-transparent disabled:border-transparent" />
+                                                        <input type="number" inputMode="numeric" pattern="[0-9]*" placeholder="-" value={set.reps} onChange={(e) => setGymProgress(p => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], reps: e.target.value }; return { ...p, [exercise.id]: o } })} disabled={set.completed} className="flex-1 min-w-0 bg-white border border-slate-200 rounded-md py-2.5 text-center text-[16px] focus:ring-2 focus:ring-slate-400 outline-none disabled:bg-transparent disabled:border-transparent" />
+                                                    </>
+                                                ) : (
+                                                    <div className="flex-1 text-center text-sm font-medium text-slate-500">{set.completed ? 'Completado' : 'Pendiente'}</div>
+                                                )}
+                                                <button onClick={() => setGymProgress(p => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], completed: !o[idx].completed }; return { ...p, [exercise.id]: o } })} className={`w-12 h-[46px] flex items-center justify-center rounded-md transition-colors ${set.completed ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-400'}`}><IconCheckCircle size={18} /></button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="px-2 pt-4 pb-safe mt-6">
+                        <button onClick={handleFinishSession} className="w-full max-w-md mx-auto block bg-slate-900 text-white py-4 rounded-xl font-bold shadow-md text-lg active:scale-95 transition-transform">
+                            Terminar y Guardar
+                        </button>
+                    </div>
+                </div>
+            );
+
+            const renderDashboard = () => (
+                <div className="space-y-8 pb-24 animate-in">
+                    <header className="pt-6 pb-2">
+                        <h2 className="font-bold text-2xl text-slate-800">Tus Metas</h2>
+                        <p className="text-slate-500">Constancia sobre perfección.</p>
+                    </header>
+
+                    <section className="space-y-4">
+                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                            <div className="flex justify-between items-end mb-2">
+                                <div className="flex items-center gap-2"><IconTarget size={18} className="text-rose-500" /><h3 className="font-bold text-slate-700">Sesiones Semanales</h3></div>
+                                <span className="text-sm font-bold text-slate-400">{dashboardStats.workoutsThisWeek} / 5</span>
+                            </div>
+                            <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-rose-500 transition-all duration-1000 ease-out" style={{ width: `${Math.min((dashboardStats.workoutsThisWeek / 5) * 100, 100)}%` }} /></div>
+                        </div>
+
+                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                            <div className="flex justify-between items-end mb-2">
+                                <div className="flex items-center gap-2"><IconWaves size={18} className="text-cyan-500" /><h3 className="font-bold text-slate-700">Horas de Surf</h3></div>
+                                <span className="text-sm font-bold text-slate-400">{Math.floor(dashboardStats.totalSurfMins / 60)}h {dashboardStats.totalSurfMins % 60}m / 10h</span>
+                            </div>
+                            <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-cyan-500 transition-all duration-1000 ease-out" style={{ width: `${Math.min((dashboardStats.totalSurfMins / 600) * 100, 100)}%` }} /></div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3 className="font-bold text-lg text-slate-700 mb-3">Tus Logros</h3>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className={`p-4 rounded-xl border ${dashboardStats.unlocked.first_surf ? 'bg-blue-50 border-blue-100' : 'bg-slate-50 border-slate-100 opacity-50 grayscale'}`}>
+                                <IconAward size={24} className={dashboardStats.unlocked.first_surf ? 'text-blue-500 mb-2' : 'text-slate-400 mb-2'} />
+                                <h4 className="font-bold text-sm text-slate-800">Bautizo</h4><p className="text-[10px] text-slate-500">Primera sesión de surf</p>
+                            </div>
+                            <div className={`p-4 rounded-xl border ${dashboardStats.unlocked.consistency ? 'bg-orange-50 border-orange-100' : 'bg-slate-50 border-slate-100 opacity-50 grayscale'}`}>
+                                <IconFlame size={24} className={dashboardStats.unlocked.consistency ? 'text-orange-500 mb-2' : 'text-slate-400 mb-2'} />
+                                <h4 className="font-bold text-sm text-slate-800">Hábito de Hierro</h4><p className="text-[10px] text-slate-500">3+ sesiones entrenadas</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            );
+
+            return (
+                <div className="min-h-screen text-slate-900 font-sans">
+                    <div className="max-w-md mx-auto min-h-screen relative flex flex-col px-4">
+                        <main className="flex-1 overflow-y-auto hide-scrollbar">
+                            {activeTab === 'home' && renderHome()}
+                            {activeTab === 'active_session' && renderActiveSession()}
+                            {activeTab === 'dashboard' && renderDashboard()}
+                        </main>
+
+                        {activeTab !== 'active_session' && (
+                            <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 pb-safe pt-2 px-6 pb-2 z-50">
+                                <div className="max-w-md mx-auto flex justify-around items-center">
+                                    <button onClick={() => { setActiveTab('home'); window.scrollTo(0, 0); }} className={`flex flex-col items-center gap-1 p-2 ${activeTab === 'home' ? 'text-slate-900' : 'text-slate-400'}`}><IconHome size={22} /><span className="text-[10px] font-semibold">Plan</span></button>
+                                    <button onClick={() => { setActiveTab('dashboard'); window.scrollTo(0, 0); }} className={`flex flex-col items-center gap-1 p-2 ${activeTab === 'dashboard' ? 'text-slate-900' : 'text-slate-400'}`}><IconTarget size={22} /><span className="text-[10px] font-semibold">Metas</span></button>
+                                </div>
+                            </nav>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>
