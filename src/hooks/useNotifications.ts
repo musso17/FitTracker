@@ -50,7 +50,7 @@ export const useNotifications = (userId: string, storageKey: (k: string) => stri
                 applicationServerKey: VAPID_PUBLIC_KEY
             });
 
-            // Phase 2: Save to Netlify Backend
+            // Phase 2: Save to Vercel Backend (API routes)
             const response = await fetch('/api/save-subscription', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

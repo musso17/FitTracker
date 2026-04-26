@@ -14,7 +14,7 @@ Una **PWA de fitness** hecha en React + TypeScript, diseñada para dos usuarios 
 | Backend | Supabase (Auth, Database, Edge Functions) |
 | PWA | Service Worker (`public/sw.js`) + manifest.json |
 | Push Notifications | Web Push API (VAPID, RFC 8291, implementación nativa con Web Crypto en Deno) |
-| Despliegue | Netlify (frontend) + Supabase (backend) |
+| Despliegue | Vercel (Frontend & Serverless) + Supabase (DB) |
 
 ---
 
