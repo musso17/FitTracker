@@ -3,15 +3,14 @@ import {
     IconX, IconWaves, IconFlame, IconActivity, IconCheckCircle, IconMoreVertical, IconSync, IconPlus, IconMinus, IconTarget,
     getColorClasses, ACTIVITY_TYPES, hapticFeedback
 } from '../constants';
-import { calculateStamina, calculate1RM, suggestProgression, predictPRProbability } from './Common';
-import { supabase } from '../utils/supabase';
+import { calculateStamina, suggestProgression, predictPRProbability } from './Common';
 
 function useLongPress(callback: () => void, ms = 400, interval = 150) {
   const timerRef = useRef<any>(null);
   const intervalRef = useRef<any>(null);
   const pressed = useRef(false);
 
-  const start = useCallback((e: any) => {
+  const start = useCallback((_e: any) => {
     if (pressed.current) return;
     pressed.current = true;
     
@@ -40,7 +39,7 @@ function useLongPress(callback: () => void, ms = 400, interval = 150) {
         start(e); 
     }, 
     onTouchEnd: stop,
-    onTouchMove: (e: any) => {
+    onTouchMove: (_e: any) => {
         // Si el usuario mueve el dedo (scroll), cancelamos el incremento
         stop();
     }
@@ -59,7 +58,7 @@ interface PillStepperProps {
     className?: string;
 }
 
-const PillStepper: React.FC<PillStepperProps> = ({ value, onIncrement, onDecrement, onChange, width, unit, completed, indicator, className }) => {
+const PillStepper: React.FC<PillStepperProps> = ({ value, onIncrement, onDecrement, onChange, width, completed, indicator, className }) => {
     const longPressInc = useLongPress(onIncrement);
     const longPressDec = useLongPress(onDecrement);
 

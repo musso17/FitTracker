@@ -35,8 +35,8 @@ export const useProfile = (userSession: any) => {
         fetchProfile();
     }, [userSession]);
 
-    const saveProfile = async (newProfile: UserProfile) => {
-        if (!userSession) return;
+    const saveProfile = async (newProfile: UserProfile): Promise<boolean> => {
+        if (!userSession) return false;
         try {
             const { error } = await supabase
                 .from('profiles')

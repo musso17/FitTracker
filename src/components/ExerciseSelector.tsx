@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { IconX, IconChevronRight, IconActivity } from '../constants';
+import { supabase } from '../utils/supabase';
 
 interface ExerciseSelectorProps {
     userKey: string;
@@ -47,7 +48,7 @@ const ExerciseSelector: React.FC<ExerciseSelectorProps> = ({
             setIsLoading(true);
             try {
                 // Fuzzy search using OR on technical and regional terms
-                const { data, error } = await supabase
+                const { data } = await supabase
                     .from('exercises')
                     .select('*')
                     .or(`name_es.ilike.%${searchQuery}%,name_en.ilike.%${searchQuery}%,synonyms.cs.{"${searchQuery}"}`)

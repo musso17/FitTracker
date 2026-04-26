@@ -1,49 +1,33 @@
 import React, { useState } from 'react';
 import { 
     IconTarget, IconCalendar, IconTrophy, 
-    IconEdit, IconTrash, IconDumbbell, IconX, IconChevronRight, IconActivity, IconFlame, IconInfoCircle
+    IconEdit, IconTrash, IconDumbbell, IconX, IconChevronRight, IconActivity, IconInfoCircle
 } from '../constants';
 import type { TrainingBlock, TrainingLog } from '../types';
-import { detectBestDay, calculateConsistency, calculateMuscleBalance, ANALYTICS_DOCS, predictGoalDate } from './Common';
+import { ANALYTICS_DOCS, predictGoalDate } from './Common';
 
 interface DashboardProps {
     dashboardStats: any;
-    dashboardInsights: any[];
-    coachInsights: any[];
     logs: TrainingLog[];
-    PLAN_BLOCKS: TrainingBlock[];
-    ANA_PLAN: TrainingBlock[];
-    MARCELO_PLAN: TrainingBlock[];
     handleEditLog: (log: any) => void;
     handleDeleteLog: (id: number) => void;
-    selectedExerciseId: string | null;
-    setSelectedExerciseId: (id: string | null) => void;
     intel: any;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
     dashboardStats,
-    dashboardInsights,
-    coachInsights,
     logs,
-    PLAN_BLOCKS,
-    ANA_PLAN,
-    MARCELO_PLAN,
     handleEditLog,
     handleDeleteLog,
-    selectedExerciseId,
-    setSelectedExerciseId,
     intel
 }) => {
     const [dashTab, setDashTab] = useState<'stats' | 'strength' | 'patrones' | 'logs'>('stats');
     const [expandedLogs, setExpandedLogs] = useState<Record<number, boolean>>({});
     const [expandedMetrics, setExpandedMetrics] = useState<Record<string, boolean>>({});
     const [showAchievements, setShowAchievements] = useState(false);
-    const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
     const [helpKey, setHelpKey] = useState<keyof typeof ANALYTICS_DOCS | null>(null);
 
     const unlockedCount = dashboardStats.achievements?.filter((a: any) => a.unlocked).length || 0;
-    const totalBadges = dashboardStats.achievements?.length || 0;
 
     return (
         <div className="space-y-6 animate-in pt-6 pb-24">

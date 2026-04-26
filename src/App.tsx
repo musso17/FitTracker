@@ -14,7 +14,6 @@ import Login from './components/Login';
 import ProfileModal from './components/ProfileModal';
 import RestTimer from './components/RestTimer';
 import ExerciseSelector from './components/ExerciseSelector';
-import { calculateMuscleBalance, getRecommendedNextBlock } from './components/Common';
 
 // Hooks
 import { useAuth } from './hooks/useAuth';
