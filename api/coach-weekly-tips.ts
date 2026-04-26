@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
-import { calculateMuscleBalance } from '../src/components/Common';
+import { calculateMuscleBalance } from '../src/utils/analytics.js';
 
 const supabase = createClient(
     process.env.VITE_SUPABASE_URL!,
