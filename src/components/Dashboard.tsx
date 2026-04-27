@@ -345,9 +345,15 @@ const Dashboard: React.FC<DashboardProps> = ({
                                                             <div className="flex flex-wrap gap-2">
                                                                 {completedSets.map((s: any, i: number) => (
                                                                     <div key={i} className="bg-white border border-slate-100 px-3 py-1 rounded-lg shadow-sm flex items-center gap-1.5">
-                                                                        <span className="text-[11px] font-black text-slate-800">{s.weight}kg</span>
-                                                                        <span className="text-[9px] font-bold text-slate-400">×</span>
-                                                                        <span className="text-[11px] font-black text-slate-800">{s.reps}</span>
+                                                                        {log.gymData?.exercises?.find((e: any) => e.id === exId)?.type === 'time' ? (
+                                                                            <span className="text-[11px] font-black text-slate-800">{s.reps} min</span>
+                                                                        ) : (
+                                                                            <>
+                                                                                <span className="text-[11px] font-black text-slate-800">{s.weight}kg</span>
+                                                                                <span className="text-[9px] font-bold text-slate-400">×</span>
+                                                                                <span className="text-[11px] font-black text-slate-800">{s.reps}</span>
+                                                                            </>
+                                                                        )}
                                                                     </div>
                                                                 ))}
                                                             </div>

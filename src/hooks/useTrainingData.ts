@@ -79,7 +79,7 @@ export const useTrainingData = (userSession: any, profile: any, userKey: string,
                             const isAssisted = ex.name.toLowerCase().includes('asistidas');
                             let totalMass = isAssisted ? Math.max(5, activeBodyWeight - addedWeight) : (addedWeight + activeBodyWeight);
                             totalWorkJoules += (totalMass * 9.8 * romMeters * reps);
-                        } else if (reps > 0) {
+                        } else if (ex.type === 'check' && reps > 0) {
                             totalRelativeTension += (profile.weight * reps);
                         }
                     }

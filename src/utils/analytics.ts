@@ -63,14 +63,26 @@ export function calculateACWR(logs: any[]) {
     const getDailyLoad = (log: any) => {
         const stamina = log.staminaScore || 0;
         let tonnage = 0;
+        let timeLoad = 0;
+        
         if (log.gymData?.progress) {
-            Object.values(log.gymData.progress).forEach((sets: any) => {
+            Object.keys(log.gymData.progress).forEach((exId) => {
+                const exDef = log.gymData.exercises?.find((e: any) => e.id === exId);
+                const sets = log.gymData.progress[exId];
                 sets.forEach((s: any) => {
-                    if (s.completed) tonnage += (parseFloat(s.weight) || 0) * (parseInt(s.reps) || 0);
+                    if (s.completed) {
+                        if (exDef?.type === 'time') {
+                            // En ejercicios de tiempo, las "reps" son minutos
+                            // Multiplicamos por 0.8 (factor ligero) para que no sobrecargue el ACWR innecesariamente
+                            timeLoad += (parseInt(s.reps) || 0) * 0.8;
+                        } else {
+                            tonnage += (parseFloat(s.weight) || 0) * (parseInt(s.reps) || 0);
+                        }
+                    }
                 });
             });
         }
-        return stamina + (tonnage / 100);
+        return stamina + timeLoad + (tonnage / 100);
     };
 
     const acuteLoads = logs.filter(l => now - new Date(l.date).getTime() <= 7 * msInDay).map(getDailyLoad);
@@ -155,9 +167,17 @@ export function detectBestDay(logs: any[]) {
         const day = new Date(log.date).getDay();
         let performance = log.staminaScore || 0;
         if (log.gymData?.progress) {
-            Object.values(log.gymData.progress).forEach((sets: any) => {
+            Object.keys(log.gymData.progress).forEach((exId) => {
+                const exDef = log.gymData.exercises?.find((e: any) => e.id === exId);
+                const sets = log.gymData.progress[exId];
                 sets.forEach((s: any) => {
-                    if (s.completed) performance += (parseFloat(s.weight) || 0) * (parseInt(s.reps) || 0) / 100;
+                    if (s.completed) {
+                        if (exDef?.type === 'time') {
+                            performance += (parseInt(s.reps) || 0) * 0.8;
+                        } else {
+                            performance += (parseFloat(s.weight) || 0) * (parseInt(s.reps) || 0) / 100;
+                        }
+                    }
                 });
             });
         }
