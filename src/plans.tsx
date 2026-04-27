@@ -56,16 +56,16 @@ export const ANA_PLAN: TrainingBlock[] = [
         id: 'ana_b5', title: 'Surf + Movilidad', icon: IconWaves, color: 'cyan',
         note: 'Día de mar. Mantén la movilidad ligera.', hasSurf: true,
         exercises: [
-            { id: 'a26', name: 'Movilidad Caderas', sets: 1, target: '5 min', type: 'check', visual: 'core' },
-            { id: 'a27', name: 'Movilidad Espalda Torácica', sets: 1, target: '5 min', type: 'check', visual: 'core' },
-            { id: 'a28', name: 'Movilidad Hombros', sets: 1, target: '5 min', type: 'check', visual: 'core' }
+            { id: 'a26', name: 'Movilidad Caderas', sets: 1, target: '5 min', type: 'time', visual: 'core' },
+            { id: 'a27', name: 'Movilidad Espalda Torácica', sets: 1, target: '5 min', type: 'time', visual: 'core' },
+            { id: 'a28', name: 'Movilidad Hombros', sets: 1, target: '5 min', type: 'time', visual: 'core' }
         ]
     },
     {
         id: 'ana_b6', title: 'Recuperación / Yoga', icon: IconHeart, color: 'purple',
         note: 'Recuperación activa. Tómate tu tiempo para respirar.', hasSurf: false,
         exercises: [
-            { id: 'a29', name: 'Sesión Yoga/Estiramientos', sets: 1, target: '30-60m', type: 'check', visual: 'core' }
+            { id: 'a29', name: 'Sesión Yoga/Estiramientos', sets: 1, target: '30-60m', type: 'time', visual: 'core' }
         ]
     }
 ];
@@ -121,7 +121,7 @@ export const MARCELO_PLAN: TrainingBlock[] = [
         id: 'mar_b6', title: 'Recuperación Activa', icon: IconHeart, color: 'purple',
         note: 'Objetivo: Reset de Cortisol y recuperación. Sueño de 8h obligatorio.', hasSurf: false,
         exercises: [
-            { id: 'm23', name: 'Caminata Ligera (Z2)', sets: 1, target: '45-60m', type: 'check', tip: 'No correr. Baja el cortisol.', visual: 'core' }
+            { id: 'm23', name: 'Caminata Ligera (Z2)', sets: 1, target: '45-60m', type: 'time', tip: 'No correr. Baja el cortisol.', visual: 'core' }
         ]
     }
 ];

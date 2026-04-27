@@ -5,7 +5,7 @@ export interface Exercise {
     name: string;
     sets: number;
     target: string;
-    type: 'weight' | 'check';
+    type: 'weight' | 'check' | 'time';
     tip?: string;
     visual: string;
     fromBlock?: string; // Para el selector

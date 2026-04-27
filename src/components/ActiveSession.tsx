@@ -564,6 +564,19 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({
                                                             </button>
                                                         </div>
                                                     </>
+                                                ) : exercise.type === 'time' ? (
+                                                    <div className="flex-1 flex flex-col gap-1.5">
+                                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-3">
+                                                            Minutos
+                                                        </span>
+                                                        <PillStepper 
+                                                            value={set.reps}
+                                                            completed={set.completed}
+                                                            onIncrement={() => setGymProgress((p: any) => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], reps: String((parseInt(o[idx].reps) || 0) + 5) }; return { ...p, [exercise.id]: o }; })}
+                                                            onDecrement={() => setGymProgress((p: any) => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], reps: String(Math.max(0, (parseInt(o[idx].reps) || 0) - 5)) }; return { ...p, [exercise.id]: o }; })}
+                                                            onChange={(v) => setGymProgress((p: any) => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], reps: v }; return { ...p, [exercise.id]: o }; })}
+                                                        />
+                                                    </div>
                                                 ) : (
                                                     <div className="flex-1 flex flex-col gap-1.5">
                                                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-3">
