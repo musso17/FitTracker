@@ -24,7 +24,6 @@ export const IconArrowDown = ({ size = 20, className = "" }) => <i className={`f
 export const IconBell = ({ size = 20, className = "" }) => <i className={`fas fa-bell ${className}`} style={{ fontSize: size }}></i>;
 export const IconTrophy = ({ size = 20, className = "" }) => <i className={`fas fa-trophy ${className}`} style={{ fontSize: size }}></i>;
 export const IconSparkles = ({ size = 20, className = "" }) => <i className={`fas fa-sparkles ${className}`} style={{ fontSize: size }}></i>;
-export const IconArrowLeft = ({ size = 20, className = "" }) => <i className={`fas fa-arrow-left ${className}`} style={{ fontSize: size }}></i>;
 export const IconInfoCircle = ({ size = 20, className = "" }) => <i className={`fas fa-info-circle ${className}`} style={{ fontSize: size }}></i>;
 
 // --- ICON MAP (for serialization/deserialization) ---

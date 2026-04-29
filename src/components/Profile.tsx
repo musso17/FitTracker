@@ -1,9 +1,9 @@
 import React from 'react';
-import { 
-    IconTarget, IconUser, IconBell, IconPlus, IconTrash, 
+import {
+    IconTarget, IconUser, IconBell, IconPlus, IconTrash,
     IconDumbbell, IconSync,
     IconLogout,
-    ICON_MAP, COLOR_OPTIONS, VISUAL_OPTIONS, ACTIVITY_TYPES 
+    ICON_MAP, COLOR_OPTIONS, VISUAL_OPTIONS, ACTIVITY_TYPES
 } from '../constants';
 import type { UserProfile, TrainingBlock } from '../types';
 
@@ -21,6 +21,8 @@ interface ProfileProps {
     setPlanBlocksOverride: (val: any) => void;
     handleLogout: () => void;
     saveProfile: (newProfile: UserProfile) => Promise<boolean>;
+    setIsExerciseSelectorOpen: (open: boolean) => void;
+    setReplacingExerciseId: (id: string | null) => void;
 }
 
 const Profile: React.FC<ProfileProps> = ({
@@ -36,9 +38,11 @@ const Profile: React.FC<ProfileProps> = ({
     planBlocksOverride,
     setPlanBlocksOverride,
     handleLogout,
-    saveProfile
+    saveProfile,
+    setIsExerciseSelectorOpen,
+    setReplacingExerciseId
 }) => {
-    
+
     if (editingBlock) {
         const updateField = (field: string, value: any) => setEditingBlock((prev: any) => ({ ...prev, [field]: value }));
         const updateExercise = (idx: number, field: string, value: any) => {
@@ -55,10 +59,8 @@ const Profile: React.FC<ProfileProps> = ({
             }));
         };
         const addExercise = () => {
-            setEditingBlock((prev: any) => ({
-                ...prev,
-                exercises: [...prev.exercises, { id: crypto.randomUUID(), name: '', sets: 3, target: '10 reps', type: 'weight', tip: '', visual: 'pull' }]
-            }));
+            setReplacingExerciseId(null);
+            setIsExerciseSelectorOpen(true);
         };
         const handleSaveBlock = () => {
             const updated = [...planBlocks];
@@ -140,14 +142,25 @@ const Profile: React.FC<ProfileProps> = ({
                 {/* Ejercicios */}
                 <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-4 shadow-sm">
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Ejercicios ({editingBlock.exercises.length})</h3>
-                    
+
                     {editingBlock.exercises.map((ex: any, idx: number) => (
                         <div key={ex.id} className="bg-slate-50 rounded-xl p-4 space-y-3 border border-slate-100 relative">
                             <div className="flex items-start justify-between">
                                 <span className="text-[10px] font-black text-slate-300 uppercase">#{idx + 1}</span>
                                 <button onClick={() => removeExercise(idx)} className="text-rose-400 hover:text-rose-600 p-1 transition-colors"><IconTrash size={14} /></button>
                             </div>
-                            <input type="text" value={ex.name} onChange={e => updateExercise(idx, 'name', e.target.value)} placeholder="Nombre del ejercicio" className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-slate-400 outline-none" />
+                            <button
+                                onClick={() => {
+                                    setReplacingExerciseId(ex.id);
+                                    setIsExerciseSelectorOpen(true);
+                                }}
+                                className="w-full text-left bg-white border border-slate-200 rounded-lg px-3 py-2.5 flex items-center justify-between group active:bg-slate-50 transition-all"
+                            >
+                                <span className={`text-sm font-bold ${ex.name ? 'text-slate-800' : 'text-slate-400'}`}>
+                                    {ex.name || 'Seleccionar ejercicio...'}
+                                </span>
+                                <IconSync size={12} className="text-slate-300 group-hover:text-slate-500 transition-colors" />
+                            </button>
                             <div className="grid grid-cols-3 gap-2">
                                 <div>
                                     <label className="block text-[9px] font-black text-slate-400 uppercase mb-1">Series</label>
@@ -191,7 +204,7 @@ const Profile: React.FC<ProfileProps> = ({
                         {editingBlock._isNew ? 'Crear Bloque' : 'Guardar Cambios'}
                     </button>
                     {!editingBlock._isNew && (
-                        <button 
+                        <button
                             onClick={() => {
                                 if (confirm('¿Eliminar este bloque permanentemente?')) {
                                     savePlanBlocks(planBlocks.filter(b => b.id !== editingBlock.id));
@@ -236,8 +249,8 @@ const Profile: React.FC<ProfileProps> = ({
                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Bloques de Entrenamiento</h3>
                 <div className="space-y-3">
                     {planBlocks.map((block) => (
-                        <div 
-                            key={block.id} 
+                        <div
+                            key={block.id}
                             onClick={() => setEditingBlock({ ...block, iconId: Object.keys(ICON_MAP).find(k => ICON_MAP[k] === block.icon) || 'dumbbell' })}
                             className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm flex items-center justify-between group active:bg-slate-50 transition-colors"
                         >
@@ -276,20 +289,20 @@ const Profile: React.FC<ProfileProps> = ({
                         </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                        <input 
-                            type="checkbox" 
-                            checked={profile.notif_enabled} 
+                        <input
+                            type="checkbox"
+                            checked={profile.notif_enabled}
                             onChange={async (e) => {
                                 const enabled = e.target.checked;
                                 if (enabled) await requestNotificationPermission();
                                 saveProfile({ ...profile, notif_enabled: enabled });
-                            }} 
-                            className="sr-only peer" 
+                            }}
+                            className="sr-only peer"
                         />
                         <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                     </label>
                 </div>
-                
+
                 {profile.notif_enabled && (
                     <div className="p-5 space-y-6 animate-in slide-in-from-top duration-300">
                         {/* Selector de Hora */}
@@ -301,9 +314,9 @@ const Profile: React.FC<ProfileProps> = ({
                                     <p className="text-[10px] text-slate-500 font-medium">Hora de entreno sugerida</p>
                                 </div>
                             </div>
-                            <input 
-                                type="time" 
-                                value={profile.notif_time} 
+                            <input
+                                type="time"
+                                value={profile.notif_time}
                                 onChange={(e) => saveProfile({ ...profile, notif_time: e.target.value })}
                                 className="bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-sm font-black text-slate-800 outline-none focus:ring-2 focus:ring-slate-900"
                             />
@@ -326,14 +339,14 @@ const Profile: React.FC<ProfileProps> = ({
                                         </div>
                                     </div>
                                     <label className="relative inline-flex items-center cursor-pointer">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={profile.notif_settings[item.id as keyof typeof profile.notif_settings]} 
-                                            onChange={(e) => saveProfile({ 
-                                                ...profile, 
+                                        <input
+                                            type="checkbox"
+                                            checked={profile.notif_settings[item.id as keyof typeof profile.notif_settings]}
+                                            onChange={(e) => saveProfile({
+                                                ...profile,
                                                 notif_settings: { ...profile.notif_settings, [item.id]: e.target.checked }
-                                            })} 
-                                            className="sr-only peer" 
+                                            })}
+                                            className="sr-only peer"
                                         />
                                         <div className="w-9 h-5 bg-slate-100 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
                                     </label>
@@ -342,7 +355,7 @@ const Profile: React.FC<ProfileProps> = ({
                         </div>
 
                         <div className="pt-4 border-t border-slate-100">
-                            <button 
+                            <button
                                 onClick={async () => {
                                     try {
                                         const response = await fetch('/api/test-push', {
@@ -352,8 +365,8 @@ const Profile: React.FC<ProfileProps> = ({
                                         });
                                         const text = await response.text();
                                         let data;
-                                        try { data = JSON.parse(text); } catch(e) { data = { error: text }; }
-                                        
+                                        try { data = JSON.parse(text); } catch (e) { data = { error: text }; }
+
                                         if (response.ok && data.success) {
                                             alert('✅ Solicitud enviada. Espera unos segundos.');
                                         } else {
@@ -382,7 +395,7 @@ const Profile: React.FC<ProfileProps> = ({
             <div className="space-y-3">
                 {/* Reset a plan original */}
                 {planBlocksOverride && planBlocksOverride[userKey] && (
-                    <button 
+                    <button
                         onClick={() => {
                             if (!confirm('¿Restaurar la rutina original? Se perderán los cambios personalizados.')) return;
                             setPlanBlocksOverride((prev: any) => {
@@ -409,7 +422,7 @@ const Profile: React.FC<ProfileProps> = ({
                         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Ana App v1.1.2</span>
                         <span className="text-[8px] font-bold text-slate-300">Build 2026.04.27 (New VAPID Keys)</span>
                     </div>
-                    <button 
+                    <button
                         onClick={() => {
                             if (confirm('¿Forzar actualización? Esto recargará la app completamente.')) {
                                 if ('serviceWorker' in navigator) {
@@ -423,7 +436,7 @@ const Profile: React.FC<ProfileProps> = ({
                                     window.location.reload();
                                 }
                             }
-                        }} 
+                        }}
                         className="text-[9px] font-black uppercase tracking-widest text-slate-400 border border-slate-200 px-4 py-2 rounded-full hover:bg-slate-100 active:scale-95 transition-all"
                     >
                         Forzar actualización

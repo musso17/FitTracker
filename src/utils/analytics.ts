@@ -31,28 +31,54 @@ export function calculate1RM(weight: number, reps: number): number {
     return weight * (1 + reps / 30);
 }
 
-export function suggestProgression(currentWeight: number, repsDone: number, targetReps: number, pattern: string) {
+export function suggestProgression(currentWeight: number, repsDone: number, targetReps: number, pattern: string, rir: number = 2, isAssisted: boolean = false) {
     const isLower = ['squat', 'hinge', 'lunge'].includes(pattern.toLowerCase());
     const increment = isLower ? 5 : 2.5;
     
-    if (repsDone >= targetReps) {
-        return {
-            suggestedWeight: currentWeight + increment,
-            type: 'increase',
-            message: `¡Sube a ${currentWeight + increment}kg! Estás progresando.`
-        };
-    } else if (repsDone / targetReps < 0.6) {
-        return {
-            suggestedWeight: Math.round(currentWeight * 0.9 * 2) / 2,
-            type: 'deload',
-            message: `Bajemos a ${Math.round(currentWeight * 0.9)}kg para recuperar técnica.`
-        };
+    // Normal progression logic
+    if (!isAssisted) {
+        if (repsDone >= targetReps && rir >= 2) {
+            return {
+                suggestedWeight: currentWeight + increment,
+                type: 'increase',
+                message: `¡Sube a ${currentWeight + increment}kg! Se ve fácil.`
+            };
+        } else if (repsDone < targetReps || rir <= 1) {
+            if (repsDone < targetReps * 0.7) {
+                return {
+                    suggestedWeight: Math.max(0, currentWeight - increment),
+                    type: 'deload',
+                    message: `Bajemos a ${currentWeight - increment}kg para completar reps.`
+                };
+            }
+            return {
+                suggestedWeight: currentWeight,
+                type: 'maintain',
+                message: 'Mantén este peso para consolidar.'
+            };
+        }
+    } 
+    // Assisted progression logic (less weight = harder)
+    else {
+        if (repsDone >= targetReps && rir >= 2) {
+            return {
+                suggestedWeight: Math.max(0, currentWeight - 5), // Menos asistencia
+                type: 'increase',
+                message: `¡Baja la asistencia a ${currentWeight - 5}kg! Estás más fuerte.`
+            };
+        } else if (repsDone < targetReps) {
+            return {
+                suggestedWeight: currentWeight + 5, // Más asistencia
+                type: 'deload',
+                message: `Sube la asistencia a ${currentWeight + 5}kg para terminar.`
+            };
+        }
     }
     
     return {
         suggestedWeight: currentWeight,
         type: 'maintain',
-        message: 'Mantén este peso una sesión más.'
+        message: 'Mantén el peso.'
     };
 }
 

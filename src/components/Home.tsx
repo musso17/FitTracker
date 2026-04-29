@@ -1,5 +1,5 @@
 import React from 'react';
-import { 
+import {
     IconFlame, IconChevronRight, IconDumbbell, IconListTodo, IconCheckCircle, IconInfoCircle, IconX,
     getColorClasses
 } from '../constants';
@@ -62,7 +62,7 @@ const Home: React.FC<HomeProps> = ({
                         </div>
                         <h3 className="text-xl font-black text-slate-800 mb-2">{ANALYTICS_DOCS[helpKey].title}</h3>
                         <p className="text-sm text-slate-500 font-medium mb-6 leading-relaxed">{ANALYTICS_DOCS[helpKey].desc}</p>
-                        
+
                         <div className="space-y-3">
                             <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-1 mb-2">Rangos y Guía</h4>
                             {ANALYTICS_DOCS[helpKey].ranges.map((r, i) => (
@@ -75,7 +75,7 @@ const Home: React.FC<HomeProps> = ({
                                 </div>
                             ))}
                         </div>
-                        
+
                         <button onClick={() => setHelpKey(null)} className="w-full mt-8 bg-slate-900 text-white py-4 rounded-2xl font-black text-sm active:scale-95 transition-transform shadow-lg shadow-slate-200">
                             Entendido
                         </button>
@@ -95,8 +95,8 @@ const Home: React.FC<HomeProps> = ({
                         <div className="relative group active:scale-95 transition-all cursor-default">
                             <div className="relative flex items-center bg-white border border-slate-100 pl-1 pr-3 py-1 rounded-xl shadow-sm transition-all group-hover:border-orange-100">
                                 <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-rose-500 rounded-lg flex items-center justify-center text-white relative overflow-hidden">
-                                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.3),transparent)]" />
-                                     <IconFlame size={18} className="transition-transform group-hover:scale-110 duration-500" />
+                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.3),transparent)]" />
+                                    <IconFlame size={18} className="transition-transform group-hover:scale-110 duration-500" />
                                 </div>
                                 <div className="ml-2.5">
                                     <div className="flex items-baseline gap-0.5">
@@ -201,13 +201,13 @@ const Home: React.FC<HomeProps> = ({
                         </div>
                         <div className="flex gap-4 overflow-x-auto px-6 pb-12 hide-scrollbar snap-x">
                             {PLAN_BLOCKS.map((block) => {
-                                const lastDoneDate = logs.filter(l => l.blockId === block.id).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]?.date;
+                                const lastDoneDate = logs.filter(l => l.blockId === block.id).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]?.date;
                                 const isBestToday = recommendedBlock && block.id === recommendedBlock.id;
-                                
+
                                 return (
-                                    <div 
-                                        key={block.id} 
-                                        onClick={() => handleStartBlock(block)} 
+                                    <div
+                                        key={block.id}
+                                        onClick={() => handleStartBlock(block)}
                                         className={`shrink-0 w-48 p-5 rounded-[2rem] border-2 cursor-pointer transition-all active:scale-[0.98] flex flex-col justify-between h-48 relative overflow-hidden ${isBestToday ? 'bg-slate-900 border-slate-900 shadow-xl shadow-slate-200' : 'bg-white border-slate-100'}`}
                                     >
                                         {lastDoneDate && (
@@ -218,7 +218,7 @@ const Home: React.FC<HomeProps> = ({
                                                 </div>
                                             </div>
                                         )}
-                                        
+
                                         <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${getColorClasses(block.color)}`}>
                                             <block.icon size={22} />
                                         </div>

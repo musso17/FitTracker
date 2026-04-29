@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { 
-    IconTarget, IconCalendar, IconTrophy, 
+import {
+    IconTarget, IconCalendar, IconTrophy,
     IconEdit, IconTrash, IconDumbbell, IconX, IconChevronRight, IconActivity, IconInfoCircle
 } from '../constants';
 import type { TrainingLog } from '../types';
 import { ANALYTICS_DOCS, predictGoalDate } from './Common';
+import Sparkline from './Sparkline';
 
 interface DashboardProps {
     dashboardStats: any;
@@ -12,6 +13,7 @@ interface DashboardProps {
     handleEditLog: (log: any) => void;
     handleDeleteLog: (id: number) => void;
     intel: any;
+    setActiveTab: (tab: string) => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
@@ -19,7 +21,8 @@ const Dashboard: React.FC<DashboardProps> = ({
     logs,
     handleEditLog,
     handleDeleteLog,
-    intel
+    intel,
+    setActiveTab
 }) => {
     const [dashTab, setDashTab] = useState<'stats' | 'strength' | 'patrones' | 'logs'>('stats');
     const [expandedLogs, setExpandedLogs] = useState<Record<number, boolean>>({});
@@ -44,7 +47,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                         </div>
                         <h3 className="text-xl font-black text-slate-800 mb-2">{ANALYTICS_DOCS[helpKey].title}</h3>
                         <p className="text-sm text-slate-500 font-medium mb-6 leading-relaxed">{ANALYTICS_DOCS[helpKey].desc}</p>
-                        
+
                         <div className="space-y-3">
                             <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-1 mb-2">Rangos y Guía</h4>
                             {ANALYTICS_DOCS[helpKey].ranges.map((r, i) => (
@@ -57,7 +60,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                                 </div>
                             ))}
                         </div>
-                        
+
                         <button onClick={() => setHelpKey(null)} className="w-full mt-8 bg-slate-900 text-white py-4 rounded-2xl font-black text-sm active:scale-95 transition-transform shadow-lg shadow-slate-200">
                             Entendido
                         </button>
@@ -72,37 +75,91 @@ const Dashboard: React.FC<DashboardProps> = ({
                         <span className="w-1 h-1 bg-slate-300 rounded-full" /> Advanced Analytics
                     </p>
                 </div>
-                <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-inner shrink-0 ml-4">
-                    <button onClick={() => setDashTab('stats')} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${dashTab === 'stats' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}>Stats & Fuerza</button>
-                    <button onClick={() => setDashTab('patrones')} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${dashTab === 'patrones' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}>Patrones</button>
-                    <button onClick={() => setDashTab('logs')} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${dashTab === 'logs' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}>Logs</button>
+                <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shadow-inner shrink-0 ml-4">
+                    <button onClick={() => setDashTab('stats')} className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${dashTab === 'stats' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}>Stats</button>
+                    <button onClick={() => setDashTab('patrones')} className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${dashTab === 'patrones' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}>Patrones</button>
+                    <button onClick={() => setDashTab('logs')} className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${dashTab === 'logs' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}>Logs</button>
                 </div>
             </header>
 
             {dashTab === 'stats' && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom duration-300">
                     <section className="grid grid-cols-2 gap-4">
-                        <div className="bg-slate-900 p-5 rounded-[2.5rem] text-white shadow-xl shadow-slate-200 relative overflow-hidden group">
+                        {/* Weekly Consistency Card */}
+                        <div className="bg-slate-900 p-5 rounded-[2.5rem] text-white shadow-xl shadow-slate-200 relative overflow-hidden group flex flex-col justify-between min-h-[160px]">
                             <div className="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors" />
-                            <IconTarget className="text-slate-400 mb-3" size={20} />
-                            <span className="text-3xl font-black block leading-none">{dashboardStats.workoutsThisWeek}</span>
-                            <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 mt-1 block">Sesiones esta semana</span>
-                            <div className="h-1.5 w-full bg-slate-800 rounded-full mt-5 overflow-hidden">
-                                <div className="h-full bg-cyan-400 transition-all duration-1000" style={{ width: `${Math.min((dashboardStats.workoutsThisWeek / 4) * 100, 100)}%` }} />
-                            </div>
-                        </div>
-                        <div className="bg-white p-5 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group cursor-pointer active:scale-95 transition-all" onClick={() => setShowAchievements(true)}>
-                            <div className="flex items-start justify-between">
-                                <IconTrophy className="text-amber-400 mb-3" size={20} />
-                                <div className="text-right">
-                                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest block leading-none mb-1">Metas</span>
-                                    <span className="text-[12px] font-black text-slate-800 tabular-nums">{dashboardStats.logros}</span>
+                            <div>
+                                <div className="flex items-center justify-between mb-3">
+                                    <IconTarget className="text-slate-400" size={20} />
+                                    <span className="text-[10px] font-black text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full uppercase tracking-widest">Hábito</span>
+                                </div>
+                                <div className="flex gap-1.5 mb-2">
+                                    {(() => {
+                                        const days = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+                                        const today = new Date();
+                                        const currentDay = today.getDay(); // 0 is Sun
+                                        const adjustedToday = currentDay === 0 ? 6 : currentDay - 1; // 0-6 (Mon-Sun)
+                                        
+                                        // Simple check: did they train in the last 7 days?
+                                        // For a real weekly grid, we'd need exact dates for Mon-Sun of current week.
+                                        const startOfWeek = new Date(today);
+                                        startOfWeek.setDate(today.getDate() - adjustedToday);
+                                        startOfWeek.setHours(0,0,0,0);
+
+                                        return days.map((d, i) => {
+                                            const checkDate = new Date(startOfWeek);
+                                            checkDate.setDate(startOfWeek.getDate() + i);
+                                            const dateStr = checkDate.toISOString().split('T')[0];
+                                            const hasTrained = logs.some(l => l.date === dateStr);
+                                            const isFuture = i > adjustedToday;
+
+                                            return (
+                                                <div key={i} className="flex flex-col items-center gap-1.5">
+                                                    <div className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${hasTrained ? 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)] scale-110' : isFuture ? 'bg-slate-800' : 'bg-slate-700'}`} />
+                                                    <span className={`text-[7px] font-black uppercase ${hasTrained ? 'text-cyan-400' : 'text-slate-500'}`}>{d}</span>
+                                                </div>
+                                            );
+                                        });
+                                    })()}
                                 </div>
                             </div>
-                            <span className="text-3xl font-black block leading-none text-slate-800 mt-2">{unlockedCount}</span>
-                            <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 mt-1 block">Logros y Medallas</span>
-                            <div className="absolute -right-4 -bottom-4 opacity-[0.05] group-hover:scale-110 transition-transform duration-700">
-                                <IconTrophy size={100} />
+                            
+                            {dashboardStats.workoutsThisWeek === 0 ? (
+                                <button 
+                                    onClick={() => setActiveTab('home')}
+                                    className="w-full bg-white text-slate-900 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest animate-bounce mt-2 group-active:scale-95 transition-transform"
+                                >
+                                    ¡Empezar Semana!
+                                </button>
+                            ) : (
+                                <div>
+                                    <span className="text-xl font-black block leading-none">{dashboardStats.workoutsThisWeek} Sesiones</span>
+                                    <span className="text-[8px] uppercase font-black tracking-widest text-slate-400 mt-1 block">Consistencia Semanal</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Achievements/Goals Card */}
+                        <div className="bg-white p-5 rounded-[2.5rem] border-2 border-slate-100 shadow-sm relative overflow-hidden group cursor-pointer active:scale-95 transition-all hover:border-amber-100" onClick={() => setShowAchievements(true)}>
+                            <div className="flex items-start justify-between relative z-10">
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className="w-8 h-8 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500">
+                                            <IconTrophy size={18} />
+                                        </div>
+                                        <span className="text-[10px] font-black text-slate-800 uppercase tracking-[0.15em]">Metas</span>
+                                    </div>
+                                    <span className="text-3xl font-black block leading-none text-slate-800">{unlockedCount}</span>
+                                    <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 mt-1 block">Logros y Medallas</span>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-[14px] font-black text-amber-500 tabular-nums bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100">
+                                        {dashboardStats.logros}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="absolute -right-6 -bottom-6 opacity-[0.03] group-hover:scale-110 transition-transform duration-700 text-slate-900">
+                                <IconTrophy size={120} />
                             </div>
                         </div>
                     </section>
@@ -110,69 +167,113 @@ const Dashboard: React.FC<DashboardProps> = ({
                     {/* Fusión: Métricas de Fuerza debajo de las tarjetas */}
                     <section className="space-y-4">
                         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] pl-1">Progreso por Ejercicio</h3>
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                             {dashboardStats.strengthMetrics?.filter((m: any) => m.history.length > 0).map((metric: any) => {
                                 const isExpanded = expandedMetrics[metric.id];
                                 const lastDone = metric.history?.[metric.history.length - 1];
+                                const historyWeights = metric.history.map((h: any) => h.weight);
+
                                 return (
-                                    <div key={metric.id} className="bg-white p-5 rounded-[2.5rem] border border-slate-100 shadow-sm">
-                                        <div className="flex items-center justify-between cursor-pointer" onClick={() => setExpandedMetrics(prev => ({ ...prev, [metric.id]: !isExpanded }))}>
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
-                                                    <IconDumbbell size={18} />
+                                    <div key={metric.id} className={`bg-white rounded-[2.5rem] border transition-all duration-500 overflow-hidden ${isExpanded ? 'border-indigo-100 shadow-xl shadow-indigo-50/50' : 'border-slate-100 shadow-sm'}`}>
+                                        <div className="p-5 flex items-center justify-between cursor-pointer group" onClick={() => setExpandedMetrics(prev => ({ ...prev, [metric.id]: !isExpanded }))}>
+                                            <div className="flex items-center gap-4 flex-1">
+                                                <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-500 transition-colors">
+                                                    <IconDumbbell size={20} />
                                                 </div>
-                                                <div>
-                                                    <h4 className="font-black text-[13px] text-slate-800 leading-tight">{metric.name}</h4>
-                                                    <div className="flex items-center gap-2 mt-1">
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{lastDone?.weight}kg × {lastDone?.reps}</span>
-                                                        {(() => {
-                                                            const pred = predictGoalDate(metric.history, lastDone?.weight, metric.goal);
-                                                            if (!pred) return null;
-                                                            return (
-                                                                <span className="text-[9px] font-black bg-indigo-50 text-indigo-500 px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                                                                    {pred}
-                                                                </span>
-                                                            );
-                                                        })()}
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <h4 className="font-black text-[14px] text-slate-800 leading-tight">{metric.name}</h4>
+                                                        <span className="text-[9px] font-black bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                                                            Objetivo: {metric.goal}kg
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 mt-1.5">
+                                                        <div className="flex items-baseline gap-1">
+                                                            <span className="text-sm font-black text-slate-900">{lastDone?.weight}</span>
+                                                            <span className="text-[9px] font-bold text-slate-400 uppercase">kg</span>
+                                                        </div>
+                                                        <div className="w-px h-2 bg-slate-200" />
+                                                        <div className="flex items-baseline gap-1">
+                                                            <span className="text-[10px] font-black text-slate-500">{lastDone?.reps}</span>
+                                                            <span className="text-[8px] font-bold text-slate-400 uppercase">reps</span>
+                                                        </div>
+                                                        {lastDone?.volume && (
+                                                            <>
+                                                                <div className="w-px h-2 bg-slate-200" />
+                                                                <div className="flex items-baseline gap-1">
+                                                                    <span className="text-[10px] font-black text-emerald-500">{Math.round(lastDone.volume)}</span>
+                                                                    <span className="text-[8px] font-black text-emerald-400 uppercase">Vol</span>
+                                                                </div>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
-                                            <IconChevronRight size={14} className={`text-slate-300 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                                            
+                                            {/* Mini Sparkline in Header */}
+                                            {!isExpanded && historyWeights.length > 1 && (
+                                                <div className="px-4 opacity-60 group-hover:opacity-100 transition-opacity">
+                                                    <Sparkline data={historyWeights.slice(-5)} width={60} height={20} color="#cbd5e1" />
+                                                </div>
+                                            )}
+
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isExpanded ? 'bg-indigo-50 text-indigo-500 rotate-90' : 'text-slate-300'}`}>
+                                                <IconChevronRight size={16} />
+                                            </div>
                                         </div>
+
+                                        {/* Slim Progress Bar at the edge */}
+                                        <div className="h-1 w-full bg-slate-50 overflow-hidden">
+                                            <div
+                                                className="h-full bg-indigo-500 transition-all duration-1000"
+                                                style={{ width: `${Math.min(metric.progress || 0, 100)}%` }}
+                                            />
+                                        </div>
+
                                         {isExpanded && (
-                                            <div className="mt-6 pt-6 border-t border-slate-50 space-y-6 animate-in slide-in-from-top-2">
-                                                {/* Meta de Fuerza */}
-                                                <div className="bg-slate-50/50 rounded-2xl p-4 border border-slate-100">
-                                                    <div className="flex justify-between items-center mb-3">
-                                                        <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Próximo Objetivo</h5>
-                                                        <span className="text-xs font-black text-slate-900">{metric.goal}kg</span>
+                                            <div className="p-6 pt-2 space-y-6 animate-in slide-in-from-top-2">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tendencia de Carga</h5>
+                                                        <p className="text-[11px] text-slate-800 font-bold">Últimas {historyWeights.length} sesiones</p>
                                                     </div>
-                                                    <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                                                        <div 
-                                                            className="h-full bg-indigo-500 transition-all duration-1000" 
-                                                            style={{ width: `${Math.min(metric.progress || 0, 100)}%` }} 
-                                                        />
-                                                    </div>
-                                                    <p className="text-[10px] text-slate-400 mt-2 font-medium italic">
-                                                        Estás al {Math.round(metric.progress || 0)}% de tu meta sugerida.
-                                                    </p>
+                                                    <Sparkline data={historyWeights} width={120} height={40} color="#6366f1" />
                                                 </div>
 
-                                                {/* Historial de Récords */}
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Volumen Total</span>
+                                                        <span className="text-xl font-black text-slate-800">{Math.round(lastDone?.volume || 0)} <span className="text-[10px] text-slate-400">kg</span></span>
+                                                    </div>
+                                                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Predicción Meta</span>
+                                                        <span className="text-xs font-black text-indigo-600">
+                                                            {predictGoalDate(metric.history, lastDone?.weight, metric.goal) || 'En progreso'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Historial de Récords - Horizontal Carousel */}
                                                 <div className="space-y-3">
-                                                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Historial de Récords</h5>
-                                                    <div className="space-y-2">
-                                                        {metric.history.slice(-5).reverse().map((record: any, idx: number) => (
-                                                            <div key={idx} className="flex items-center justify-between bg-white border border-slate-50 p-3 rounded-xl">
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center text-[10px] font-black text-slate-400">
-                                                                        {new Date(record.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}
-                                                                    </div>
-                                                                    <span className="text-sm font-bold text-slate-800">{record.weight}kg</span>
+                                                    <div className="flex items-center justify-between px-1">
+                                                        <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Evolución de Carga</h5>
+                                                        <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Desliza <IconChevronRight size={8} /></span>
+                                                    </div>
+                                                    <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 hide-scrollbar snap-x">
+                                                        {metric.history.slice(-8).reverse().map((record: any, idx: number) => (
+                                                            <div key={idx} className="shrink-0 w-28 bg-white border border-slate-100 p-3 rounded-2xl shadow-sm snap-start">
+                                                                <span className="text-[8px] font-black text-slate-400 uppercase block mb-2">
+                                                                    {new Date(record.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}
+                                                                </span>
+                                                                <div className="flex items-baseline gap-1">
+                                                                    <span className="text-sm font-black text-slate-800">{record.weight}</span>
+                                                                    <span className="text-[9px] font-bold text-slate-400">kg</span>
                                                                 </div>
-                                                                <span className="text-[10px] font-bold text-slate-400">× {record.reps} reps</span>
+                                                                <div className="text-[9px] font-bold text-slate-400 mt-1">
+                                                                    × {record.reps} reps
+                                                                </div>
                                                             </div>
-                                                        )) || <p className="text-[10px] text-slate-400 italic">No hay historial aún</p>}
+                                                        ))}
                                                     </div>
                                                 </div>
                                             </div>
@@ -239,7 +340,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                             <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 mt-1 block">Índice consistencia</span>
                         </div>
                     </section>
-                    
+
                     {intel.placeholders.consistency && (
                         <div className="bg-slate-100/50 border border-dashed border-slate-200 p-6 rounded-[2.5rem] text-center">
                             <p className="text-[11px] font-black uppercase text-slate-400 tracking-widest leading-relaxed">
@@ -288,8 +389,8 @@ const Dashboard: React.FC<DashboardProps> = ({
                                         <div>
                                             <h4 className="text-[11px] font-black uppercase tracking-tight text-slate-800">Ratio Pull:Push</h4>
                                             <p className="text-[10px] text-slate-500 font-medium">
-                                                {balance.pullPushRatio < 0.8 
-                                                    ? 'Entrenas demasiado empuje. Riesgo de hombros.' 
+                                                {balance.pullPushRatio < 0.8
+                                                    ? 'Entrenas demasiado empuje. Riesgo de hombros.'
                                                     : 'Balance saludable para tus hombros.'}
                                             </p>
                                         </div>
@@ -335,7 +436,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                                                     const exName = log.gymData?.exercises?.find((e: any) => e.id === exId)?.name || 'Ejercicio';
                                                     const completedSets = Array.isArray(sets) ? sets.filter((s: any) => s.completed) : [];
                                                     if (completedSets.length === 0) return null;
-                                                    
+
                                                     return (
                                                         <div key={exId} className="bg-slate-50/50 rounded-2xl p-4 border border-slate-50">
                                                             <div className="flex justify-between items-baseline mb-2">

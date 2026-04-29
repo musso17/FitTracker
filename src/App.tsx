@@ -41,9 +41,9 @@ export default function App() {
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
     // --- PLAN & USER KEY ---
-    const { 
-        PLAN_BLOCKS, currentUserName, userKey, savePlanBlocks, 
-        planBlocksOverride, setPlanBlocksOverride, storageKey 
+    const {
+        PLAN_BLOCKS, currentUserName, userKey, savePlanBlocks,
+        planBlocksOverride, setPlanBlocksOverride, storageKey
     } = usePlan(userSession);
 
     // --- DATA & STATS ---
@@ -102,19 +102,19 @@ export default function App() {
         Object.entries(session.gymProgress).forEach(([exId, sets]: [string, any]) => {
             if (Array.isArray(sets)) {
                 let exerciseTonelaje = 0;
-                sets.forEach((s: any) => { 
+                sets.forEach((s: any) => {
                     if (s.completed) {
                         const kg = parseFloat(s.weight) || 0;
                         const reps = parseInt(s.reps) || 0;
                         exerciseTonelaje += kg * reps;
-                        
+
                         // Check for PR
                         const metric = dashboardStats.strengthMetrics?.find((m: any) => m.id === exId);
                         if (metric && kg > (metric.currentMax || 0)) {
                             const title = `🔥 Nuevo PR en ${metric.name}: ${kg}kg`;
                             if (!achievements.includes(title)) achievements.push(title);
                         }
-                    } 
+                    }
                 });
                 recapTonelaje += exerciseTonelaje;
             }
@@ -153,7 +153,7 @@ export default function App() {
         const isEditing = session.editingLogId !== null;
         const localDate = new Date();
         const localDateStr = `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, '0')}-${String(localDate.getDate()).padStart(2, '0')}`;
-        
+
         const payload: any = {
             date: isEditing ? logs.find(l => l.id === session.editingLogId)?.date : localDateStr,
             blockId: session.activeBlock.id,
@@ -173,7 +173,7 @@ export default function App() {
             }
             const recap = buildRecap();
             setSessionRecap(recap);
-            
+
             // Trigger Immediate Achievement Push
             if (recap.achievements.length > 0 && notificationSettings.enabled) {
                 fetch('/api/send-notification', {
@@ -190,14 +190,14 @@ export default function App() {
             // Limpiar el estado de la sesión activa
             session.resetSessionState();
             setRestTimer({ active: false, seconds: 0, total: 0 });
-            
+
             if (recap) {
                 setActiveTab('recap');
                 window.scrollTo(0, 0);
             } else {
                 setActiveTab('home');
             }
-            
+
             if (notificationSettings.enabled && notificationSettings.workout) notify("¡Sesión Guardada! 🚀", "Gran trabajo.");
         } catch (e: any) {
             showToast(`Error al guardar: ${e.message}`, "error");
@@ -228,44 +228,74 @@ export default function App() {
         <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-slate-200">
             {isProfileModalOpen && <ProfileModal profile={profile} setProfile={setProfile} setIsProfileModalOpen={setIsProfileModalOpen} saveProfile={saveProfile} />}
             {session.isExerciseSelectorOpen && (
-                <ExerciseSelector 
-                    userKey={userKey} ANA_PLAN={ANA_PLAN} MARCELO_PLAN={MARCELO_PLAN} replacingExerciseId={session.replacingExerciseId} 
-                    setIsExerciseSelectorOpen={session.setIsExerciseSelectorOpen} 
+                <ExerciseSelector
+                    userKey={userKey} ANA_PLAN={ANA_PLAN} MARCELO_PLAN={MARCELO_PLAN} replacingExerciseId={session.replacingExerciseId}
+                    setIsExerciseSelectorOpen={session.setIsExerciseSelectorOpen}
                     onSelect={(ex) => {
-                        if (session.sessionExercises.some(e => e.id === ex.id && e.id !== session.replacingExerciseId)) { showToast('Ya está en la sesión.', "info"); return; }
-                        if (session.replacingExerciseId) session.setSessionExercises(prev => prev.map(e => e.id === session.replacingExerciseId ? ex : e));
-                        else session.setSessionExercises(prev => [...prev, ex]);
+                        // Si estamos editando un bloque de la rutina (Profile)
+                        if (activeTab === 'profile' && editingPlanBlock) {
+                            setEditingPlanBlock((prev: any) => {
+                                const newEx = { ...ex, id: crypto.randomUUID() }; // Nuevo ID para el plan
+                                if (session.replacingExerciseId) {
+                                    return {
+                                        ...prev,
+                                        exercises: prev.exercises.map((e: any) => e.id === session.replacingExerciseId ? newEx : e)
+                                    };
+                                } else {
+                                    return {
+                                        ...prev,
+                                        exercises: [...prev.exercises, newEx]
+                                    };
+                                }
+                            });
+                        }
+                        // Si estamos en una sesión activa
+                        else {
+                            if (session.sessionExercises.some(e => e.id === ex.id && e.id !== session.replacingExerciseId)) {
+                                showToast('Ya está en la sesión.', "info");
+                                return;
+                            }
+                            if (session.replacingExerciseId) {
+                                session.setSessionExercises(prev => prev.map(e => e.id === session.replacingExerciseId ? ex : e));
+                            } else {
+                                session.setSessionExercises(prev => [...prev, ex]);
+                            }
+                        }
                         session.setIsExerciseSelectorOpen(false);
+                        session.setReplacingExerciseId(null);
                     }}
                 />
             )}
             <RestTimer restTimer={restTimer} setRestTimer={setRestTimer} />
-            
+
             <div className="max-w-md mx-auto min-h-screen relative flex flex-col px-4">
                 <main className="flex-1 overflow-y-auto hide-scrollbar">
                     {activeTab === 'home' && <Home currentUserName={currentUserName} userKey={userKey} currentStreak={currentStreak} logs={logs} PLAN_BLOCKS={PLAN_BLOCKS} recommendedBlock={intel.recommendedBlock} setActiveTab={setActiveTab} handleStartBlock={(block) => { session.startBlock(block); setActiveTab('active_session'); }} wellnessOverride={intel.recovery} />}
                     {activeTab === 'active_session' && (
-                        <ActiveSession 
-                            {...session} PLAN_BLOCKS={PLAN_BLOCKS} setActiveTab={setActiveTab} dashboardStats={dashboardStats} logs={logs} 
-                            activeMenuId={activeMenuId} setActiveMenuId={setActiveMenuId} startRestTimer={startRestTimer} 
+                        <ActiveSession
+                            {...session} PLAN_BLOCKS={PLAN_BLOCKS} setActiveTab={setActiveTab} dashboardStats={dashboardStats} logs={logs}
+                            activeMenuId={activeMenuId} setActiveMenuId={setActiveMenuId} startRestTimer={startRestTimer}
                             handleFinishSession={handleFinishSession} showToast={showToast} restTimer={restTimer}
                         />
                     )}
                     {activeTab === 'dashboard' && (
-                        <Dashboard 
-                            dashboardStats={dashboardStats} 
-                            logs={logs} 
-                            handleEditLog={handleEditLog} handleDeleteLog={deleteLog} 
+                        <Dashboard
+                            dashboardStats={dashboardStats}
+                            logs={logs}
+                            handleEditLog={handleEditLog} handleDeleteLog={deleteLog}
                             intel={intel}
+                            setActiveTab={setActiveTab}
                         />
                     )}
                     {activeTab === 'profile' && (
-                        <Profile 
-                            profile={profile} currentUserName={currentUserName} planBlocks={PLAN_BLOCKS} editingBlock={editingPlanBlock} setEditingBlock={setEditingPlanBlock} 
-                            savePlanBlocks={savePlanBlocks} setIsProfileModalOpen={setIsProfileModalOpen} 
-                            requestNotificationPermission={requestPermission} userKey={userKey} 
+                        <Profile
+                            profile={profile} currentUserName={currentUserName} planBlocks={PLAN_BLOCKS} editingBlock={editingPlanBlock} setEditingBlock={setEditingPlanBlock}
+                            savePlanBlocks={savePlanBlocks} setIsProfileModalOpen={setIsProfileModalOpen}
+                            requestNotificationPermission={requestPermission} userKey={userKey}
                             planBlocksOverride={planBlocksOverride} setPlanBlocksOverride={setPlanBlocksOverride} handleLogout={logout}
                             saveProfile={saveProfile}
+                            setIsExerciseSelectorOpen={session.setIsExerciseSelectorOpen}
+                            setReplacingExerciseId={session.setReplacingExerciseId}
                         />
                     )}
                     {activeTab === 'recap' && <Recap sessionRecap={sessionRecap} currentStreak={currentStreak} setActiveTab={setActiveTab} setSessionRecap={setSessionRecap} />}
@@ -274,16 +304,16 @@ export default function App() {
                 {activeTab !== 'active_session' && activeTab !== 'recap' && (
                     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 pb-safe pt-2 px-6 pb-2 z-50">
                         <div className="max-w-md mx-auto flex justify-around items-center">
-                            <button 
-                                onClick={() => { 
+                            <button
+                                onClick={() => {
                                     if (session.activeBlock) {
                                         setActiveTab('active_session');
                                         showToast(`Sesión en curso: ${session.activeBlock.title}`, "info");
                                     } else {
-                                        setActiveTab('home'); 
+                                        setActiveTab('home');
                                     }
-                                    window.scrollTo(0, 0); 
-                                }} 
+                                    window.scrollTo(0, 0);
+                                }}
                                 className={`flex flex-col items-center gap-1 p-2 relative ${activeTab === 'home' ? 'text-slate-900' : 'text-slate-400'}`}
                             >
                                 <IconHome size={22} />

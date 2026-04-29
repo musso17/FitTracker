@@ -206,11 +206,24 @@ export const useTrainingData = (userSession: any, profile: any, userKey: string,
                         if (maxWeightSession > 0) {
                             if (!extHistory[exId]) extHistory[exId] = [];
                             const history = extHistory[exId];
+                            
+                            // Calculate total session volume for this exercise
+                            const totalSessionVolume = sets.reduce((acc: number, s: any) => 
+                                s.completed ? acc + (parseFloat(s.weight) || 0) * (parseInt(s.reps) || 0) : acc, 0
+                            );
+
                             if (history.length > 0 && history[history.length - 1].weight === maxWeightSession && history[history.length - 1].reps === repsAtMax) {
                                 history[history.length - 1].count++;
                                 history[history.length - 1].date = log.date;
+                                history[history.length - 1].volume = totalSessionVolume;
                             } else {
-                                history.push({ weight: maxWeightSession, reps: repsAtMax, date: log.date, count: 1 });
+                                history.push({ 
+                                    weight: maxWeightSession, 
+                                    reps: repsAtMax, 
+                                    volume: totalSessionVolume,
+                                    date: log.date, 
+                                    count: 1 
+                                });
                             }
                         }
                     });
@@ -350,6 +363,15 @@ export const useTrainingData = (userSession: any, profile: any, userKey: string,
         const achievementsList = [
             { id: 'first_round', title: 'Primer Round', desc: 'Primera sesión de striking.', icon: '🔥', color: 'orange', unlocked: filteredLogs.some(l => l.muayThaiData || l.blockId.toLowerCase().includes('muay')) },
             { id: 'iron_habit', title: 'Hábito de Hierro', desc: '3+ sesiones esta semana.', icon: '📈', color: 'indigo', unlocked: workoutsThisWeek >= 3 },
+            { id: 'ton_club', title: 'Club de la Tonelada', desc: 'Mover +1 tonelada en una sesión.', icon: '🐘', color: 'slate', unlocked: filteredLogs.some(l => {
+                let logTonnage = 0;
+                if (l.gymData?.progress) {
+                    Object.values(l.gymData.progress).flat().forEach((s: any) => {
+                        if (s?.completed) logTonnage += (parseFloat(s.weight) || 0) * (parseInt(s.reps) || 0);
+                    });
+                }
+                return logTonnage >= 1000;
+            }) },
             { id: 'brute_force', title: 'Fuerza Bruta', desc: 'Mover +5 toneladas en una semana.', icon: '🏋️', color: 'slate', unlocked: tonnageThisWeek >= 5000 },
             { id: 'zero_gravity', title: 'Gravedad Cero', desc: 'Dominio de tu peso corporal (Pullups).', icon: '☁️', color: 'cyan', unlocked: strengthMetrics.some(m => (m.name.toLowerCase().includes('dominada') || m.name.toLowerCase().includes('pullup')) && m.currentMax > 0) },
             { id: 'streak_fire', title: 'Racha de Fuego', desc: '7 días seguidos entrenando.', icon: '⚡', color: 'orange', unlocked: (filteredLogs.length > 0 && currentStreak >= 7) }
