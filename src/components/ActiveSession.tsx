@@ -15,7 +15,7 @@ interface ActiveSessionProps {
     setMuayThaiForm: any;
     sessionExercises: any[];
     setSessionExercises: any;
-    editingLogId: string | null;
+    editingLogId: number | string | null;
     setIsExerciseSelectorOpen: (open: boolean) => void;
     setReplacingExerciseId: (id: string | null) => void;
     
@@ -141,7 +141,6 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({
             <div className="space-y-6 mx-4">
                 {sessionExercises.map((exercise: any) => {
                     const isSkipped = skippedExercises[exercise.id];
-                    const metric = dashboardStats.strengthMetrics?.find((m: any) => m.id === exercise.id);
                     const progress = gymProgress[exercise.id] || [];
                     const firstUncompletedIdx = progress.findIndex((s: any) => !s.completed);
 
