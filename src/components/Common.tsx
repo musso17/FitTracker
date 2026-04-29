@@ -25,3 +25,15 @@ export const Toast: React.FC<ToastProps> = ({ message, type }) => (
         </div>
     </div>
 );
+export const hapticFeedback = (type: 'light' | 'medium' | 'success' | 'warning' | 'error' = 'light') => {
+    if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
+        const patterns = {
+            light: [10],
+            medium: [20],
+            success: [10, 50, 10],
+            warning: [50, 100, 50],
+            error: [100, 50, 100, 50, 100]
+        };
+        window.navigator.vibrate(patterns[type]);
+    }
+};

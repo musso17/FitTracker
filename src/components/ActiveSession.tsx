@@ -9,13 +9,10 @@ interface ActiveSessionProps {
     gymProgress: any;
     setGymProgress: any;
     skippedExercises: any;
-    setSkippedExercises: any;
     surfForm: any;
     setSurfForm: any;
     muayThaiForm: any;
     setMuayThaiForm: any;
-    activityForm: any;
-    setActivityForm: any;
     sessionExercises: any[];
     setSessionExercises: any;
     editingLogId: string | null;
@@ -30,8 +27,8 @@ interface ActiveSessionProps {
     setActiveMenuId: (id: string | null) => void;
     startRestTimer: (tip?: string) => void;
     handleFinishSession: () => void;
-    showToast: (msg: string, type: string) => void;
-    restTimer: number;
+    showToast: (msg: string, type: 'success' | 'error' | 'info') => void;
+    restTimer: { active: boolean; seconds: number; total: number };
 }
 
 const ActiveSession: React.FC<ActiveSessionProps> = ({
@@ -39,13 +36,10 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({
     gymProgress,
     setGymProgress,
     skippedExercises,
-    setSkippedExercises,
     surfForm,
     setSurfForm,
     muayThaiForm,
     setMuayThaiForm,
-    activityForm,
-    setActivityForm,
     sessionExercises,
     editingLogId,
     setIsExerciseSelectorOpen,
@@ -197,9 +191,7 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({
                                                 parseFloat(ghostWeight) || 0,
                                                 parseInt(ghostReps) || 0,
                                                 parseInt(exercise.target) || 8,
-                                                exercise.visual || '',
-                                                2, 
-                                                metric?.isAssisted || false
+                                                exercise.visual || ''
                                             );
 
                                             const isCurrent = idx === firstUncompletedIdx;
@@ -263,8 +255,8 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({
                                                                 placeholder="0"
                                                             />
                                                             <div className="flex justify-center mt-3 gap-1">
-                                                                <button onClick={() => setGymProgress((p: any) => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], weight: String(Math.max(0, (parseFloat(o[idx].weight) || 0) - 2.5)) }; return { ...p, [exercise.id]: o }; })} className="w-10 h-8 flex items-center justify-center bg-white/5 rounded-lg text-[10px] font-black text-slate-400 active:bg-white/10 transition-all">-2.5</button>
-                                                                <button onClick={() => setGymProgress((p: any) => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], weight: String((parseFloat(o[idx].weight) || 0) + 2.5) }; return { ...p, [exercise.id]: o }; })} className="w-10 h-8 flex items-center justify-center bg-white/5 rounded-lg text-[10px] font-black text-slate-400 active:bg-white/10 transition-all">+2.5</button>
+                                                                <button onClick={() => { hapticFeedback('light'); setGymProgress((p: any) => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], weight: String(Math.max(0, (parseFloat(o[idx].weight) || 0) - 2.5)) }; return { ...p, [exercise.id]: o }; }); }} className="w-10 h-8 flex items-center justify-center bg-white/5 rounded-lg text-[10px] font-black text-slate-400 active:bg-white/10 transition-all">-2.5</button>
+                                                                <button onClick={() => { hapticFeedback('light'); setGymProgress((p: any) => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], weight: String((parseFloat(o[idx].weight) || 0) + 2.5) }; return { ...p, [exercise.id]: o }; }); }} className="w-10 h-8 flex items-center justify-center bg-white/5 rounded-lg text-[10px] font-black text-slate-400 active:bg-white/10 transition-all">+2.5</button>
                                                             </div>
                                                         </div>
 
@@ -279,8 +271,8 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({
                                                                 placeholder="0"
                                                             />
                                                             <div className="flex justify-center mt-3 gap-1">
-                                                                <button onClick={() => setGymProgress((p: any) => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], reps: String(Math.max(0, (parseInt(o[idx].reps) || 0) - 1)) }; return { ...p, [exercise.id]: o }; })} className="w-10 h-8 flex items-center justify-center bg-white/5 rounded-lg text-[10px] font-black text-slate-400 active:bg-white/10 transition-all">-1</button>
-                                                                <button onClick={() => setGymProgress((p: any) => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], reps: String((parseInt(o[idx].reps) || 0) + 1) }; return { ...p, [exercise.id]: o }; })} className="w-10 h-8 flex items-center justify-center bg-white/5 rounded-lg text-[10px] font-black text-slate-400 active:bg-white/10 transition-all">+1</button>
+                                                                <button onClick={() => { hapticFeedback('light'); setGymProgress((p: any) => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], reps: String(Math.max(0, (parseInt(o[idx].reps) || 0) - 1)) }; return { ...p, [exercise.id]: o }; }); }} className="w-10 h-8 flex items-center justify-center bg-white/5 rounded-lg text-[10px] font-black text-slate-400 active:bg-white/10 transition-all">-1</button>
+                                                                <button onClick={() => { hapticFeedback('light'); setGymProgress((p: any) => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], reps: String((parseInt(o[idx].reps) || 0) + 1) }; return { ...p, [exercise.id]: o }; }); }} className="w-10 h-8 flex items-center justify-center bg-white/5 rounded-lg text-[10px] font-black text-slate-400 active:bg-white/10 transition-all">+1</button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -298,7 +290,7 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({
                                                                 return (
                                                                     <button 
                                                                         key={r.v}
-                                                                        onClick={() => setGymProgress((p: any) => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], rir: String(r.v) }; return { ...p, [exercise.id]: o }; })}
+                                                                        onClick={() => { hapticFeedback('medium'); setGymProgress((p: any) => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], rir: String(r.v) }; return { ...p, [exercise.id]: o }; }); }}
                                                                         className={`flex-1 h-14 rounded-xl flex flex-col items-center justify-center transition-all ${isSelected ? `${r.color} scale-105 shadow-lg` : 'bg-white/5 text-slate-500 hover:bg-white/10'}`}
                                                                     >
                                                                         <span className={`text-lg font-black ${isSelected ? 'text-white' : 'text-slate-400'}`}>{r.v}</span>
@@ -322,9 +314,7 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({
                                                                             parseFloat(o[idx].weight) || 0,
                                                                             parseInt(o[idx].reps) || 0,
                                                                             parseInt(exercise.target) || 8,
-                                                                            exercise.visual || '',
-                                                                            parseInt(o[idx].rir) || 2,
-                                                                            metric?.isAssisted || false
+                                                                            exercise.visual || ''
                                                                         );
                                                                         o[nextIdx] = { ...o[nextIdx], weight: String(suggestion.suggestedWeight), reps: o[nextIdx].reps || o[idx].reps };
                                                                     }
