@@ -45,7 +45,6 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({
     setIsExerciseSelectorOpen,
     setReplacingExerciseId,
     setActiveTab,
-    dashboardStats,
     logs,
     activeMenuId,
     setActiveMenuId,
