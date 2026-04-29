@@ -36,10 +36,12 @@ export const useActiveSessionState = (_PLAN_BLOCKS: any[], logs: any[]) => {
                 const lastProgress = lastLog?.gymData?.progress?.[ex.id];
 
                 initialProgress[ex.id] = Array.from({ length: ex.sets }, (_, i) => {
-                    if (lastProgress && lastProgress[i] && lastProgress[i].weight) {
-                        return { weight: lastProgress[i].weight.toString(), reps: '', completed: false };
-                    }
-                    return { weight: '', reps: '', completed: false };
+                    const weight = (lastProgress && lastProgress[i] && lastProgress[i].weight) 
+                        ? lastProgress[i].weight.toString() 
+                        : (lastProgress && lastProgress[0] && lastProgress[0].weight) 
+                            ? lastProgress[0].weight.toString() 
+                            : '';
+                    return { weight, reps: ex.target.toString(), completed: false };
                 });
             });
             setGymProgress(initialProgress);
