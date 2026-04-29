@@ -83,7 +83,7 @@ export const MARCELO_PLAN: TrainingBlock[] = [
             { id: 'm6', name: 'Press de Banca Plano', sets: 4, target: '6-8', type: 'weight', tip: 'Carga pesada. Descanso: 120-180s. Controla la bajada.', visual: 'benchpress' },
             { id: 'm7', name: 'Remo con Barra (45º)', sets: 4, target: '8-10', type: 'weight', tip: 'Carga pesada. Descanso: 120s. Codos a la cadera.', visual: 'row' },
             { id: 'm8', name: 'Press Inclinado (Manc)', sets: 3, target: '8-10', type: 'weight', tip: 'Prioriza pecho superior. Descanso: 90s. Controla el estiramiento.', visual: 'benchpress' },
-            { id: 'm9', name: 'Extensión Tríceps Overhead', sets: 3, target: '10-12', type: 'weight', tip: 'Estira la cabeza larga al máximo. Descanso: 90s.', visual: 'pull' },
+            { id: 'm9', name: 'Extensión Tríceps Overhead', sets: 3, target: '10-12', type: 'weight', tip: 'Estira la cabeza larga al máximo. Descanso: 90s.', visual: 'push' },
             { id: 'm10', name: 'Curl Bíceps Inclinado', sets: 3, target: '10-12', type: 'weight', tip: 'Máxima tensión en estiramiento. Descanso: 90s.', visual: 'pull' }
         ]
     },
@@ -103,7 +103,7 @@ export const MARCELO_PLAN: TrainingBlock[] = [
         exercises: [
             { id: 'm15', name: 'Press Inclinado (Barra)', sets: 4, target: '8-10', type: 'weight', tip: 'Carga moderada. Descanso: 120s. Énfasis pecho superior.', visual: 'benchpress' },
             { id: 'm16', name: 'Dominadas (Wide Grip)', sets: 4, target: 'Fallo (-1)', type: 'check', tip: 'Mejor compuesto para espalda ancha. Descanso: 120-180s.', visual: 'pull' },
-            { id: 'm17', name: 'Elevaciones Laterales', sets: 4, target: '12-15', type: 'weight', tip: 'Poco peso, tensión constante. Descanso: 60-90s.', visual: 'pull' },
+            { id: 'm17', name: 'Elevaciones Laterales', sets: 4, target: '12-15', type: 'weight', tip: 'Poco peso, tensión constante. Descanso: 60-90s.', visual: 'push' },
             { id: 'm18', name: 'Face Pull con cuerda', sets: 3, target: '12-15', type: 'weight', tip: 'Corrige hombros redondeados. Descanso: 90s.', visual: 'pull' }
         ]
     },

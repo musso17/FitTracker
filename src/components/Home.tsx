@@ -1,10 +1,10 @@
 import React from 'react';
 import {
     IconFlame, IconChevronRight, IconDumbbell, IconListTodo, IconCheckCircle, IconInfoCircle, IconX,
-    getColorClasses
+    getColorClasses, getBlockMoodClasses
 } from '../constants';
 import type { TrainingBlock } from '../types';
-import { calculateRecoveryScore, ANALYTICS_DOCS } from './Common';
+import { calculateRecoveryScore, ANALYTICS_DOCS, parseSafeDate } from './Common';
 
 interface HomeProps {
     currentUserName: string;
@@ -39,7 +39,7 @@ const Home: React.FC<HomeProps> = ({
     const wellness = wellnessOverride || calculateRecoveryScore(logs, currentStreak);
 
     const getDaysAgo = (dateStr: string) => {
-        const d = new Date(dateStr);
+        const d = parseSafeDate(dateStr);
         const diffTime = Math.abs(now.getTime() - d.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         if (diffDays === 0) return 'Hoy';
@@ -161,21 +161,24 @@ const Home: React.FC<HomeProps> = ({
                                     <span className="text-[10px] font-black bg-slate-900 text-white px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">Sugerido</span>
                                 </div>
 
-                                {recommendedBlock && (
-                                    <div className="bg-white rounded-[2.5rem] p-8 border-2 border-slate-900 shadow-2xl shadow-slate-200 animate-in zoom-in duration-500 cursor-pointer active:scale-[0.98] transition-transform relative overflow-hidden group" onClick={() => handleStartBlock(recommendedBlock)}>
-                                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform">
-                                            {<recommendedBlock.icon size={120} />}
+                                {recommendedBlock && (() => {
+                                    const mood = getBlockMoodClasses(recommendedBlock);
+                                    return (
+                                        <div className={`${mood.card} rounded-[2.5rem] p-8 border-2 ${mood.border} shadow-2xl animate-in zoom-in duration-500 cursor-pointer active:scale-[0.98] transition-all relative overflow-hidden group`} onClick={() => handleStartBlock(recommendedBlock)}>
+                                            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 group-hover:opacity-20 transition-all">
+                                                {<recommendedBlock.icon size={120} />}
+                                            </div>
+                                            <div className="relative z-10">
+                                                <span className={`${mood.accent} text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest mb-4 inline-block`}>Plan de hoy</span>
+                                                <h3 className={`font-black text-3xl ${mood.text} leading-none tracking-tight`}>{recommendedBlock.title}</h3>
+                                                <p className="text-sm text-slate-500 mt-4 leading-snug font-medium pr-10">{recommendedBlock.note}</p>
+                                                <button className={`w-full mt-8 ${mood.button} text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.99]`}>
+                                                    Iniciar Sesión <IconChevronRight size={16} />
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className="relative z-10">
-                                            <span className="bg-slate-900 text-white text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest mb-4 inline-block">Plan de hoy</span>
-                                            <h3 className="font-black text-3xl text-slate-900 leading-none">{recommendedBlock.title}</h3>
-                                            <p className="text-sm text-slate-500 mt-4 leading-snug font-medium pr-10">{recommendedBlock.note}</p>
-                                            <button className="w-full mt-8 bg-slate-900 text-white py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 group-hover:bg-slate-800 transition-colors">
-                                                Iniciar Sesión <IconChevronRight size={16} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
+                                    );
+                                })()}
                             </>
                         ) : (
                             <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[2.5rem] p-8 text-white shadow-xl shadow-emerald-200 animate-in slide-in-from-bottom duration-700">
@@ -201,32 +204,33 @@ const Home: React.FC<HomeProps> = ({
                         </div>
                         <div className="flex gap-4 overflow-x-auto px-6 pb-12 hide-scrollbar snap-x">
                             {PLAN_BLOCKS.map((block) => {
-                                const lastDoneDate = logs.filter(l => l.blockId === block.id).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]?.date;
+                                const lastDoneDate = logs.filter(l => l.blockId === block.id).sort((a, b) => b.date.localeCompare(a.date))[0]?.date;
                                 const isBestToday = recommendedBlock && block.id === recommendedBlock.id;
+                                const mood = getBlockMoodClasses(block);
 
                                 return (
                                     <div
                                         key={block.id}
                                         onClick={() => handleStartBlock(block)}
-                                        className={`shrink-0 w-48 p-5 rounded-[2rem] border-2 cursor-pointer transition-all active:scale-[0.98] flex flex-col justify-between h-48 relative overflow-hidden ${isBestToday ? 'bg-slate-900 border-slate-900 shadow-xl shadow-slate-200' : 'bg-white border-slate-100'}`}
+                                        className={`shrink-0 w-48 p-5 rounded-[2rem] border-2 cursor-pointer transition-all active:scale-[0.98] flex flex-col justify-between h-48 relative overflow-hidden ${isBestToday ? `${mood.card} ${mood.border} shadow-xl shadow-slate-200` : 'bg-white border-slate-100'}`}
                                     >
                                         {lastDoneDate && (
                                             <div className="absolute top-4 right-4 z-10">
-                                                <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${isBestToday ? 'bg-white/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                                                <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${isBestToday ? 'bg-white/20 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
                                                     <IconCheckCircle size={10} />
                                                     {getDaysAgo(lastDoneDate)}
                                                 </div>
                                             </div>
                                         )}
 
-                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${getColorClasses(block.color)}`}>
+                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isBestToday ? `${mood.accent} text-white` : getColorClasses(block.color)}`}>
                                             <block.icon size={22} />
                                         </div>
 
                                         <div>
-                                            <h4 className={`font-black text-sm leading-tight ${isBestToday ? 'text-white' : 'text-slate-800'}`}>{block.title}</h4>
+                                            <h4 className={`font-black text-sm leading-tight ${isBestToday ? mood.text : 'text-slate-800'}`}>{block.title}</h4>
                                             <div className="flex items-center gap-2 mt-2">
-                                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-widest ${isBestToday ? 'bg-white/10 text-white/60' : 'bg-slate-100 text-slate-400'}`}>
+                                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-widest ${isBestToday ? `${mood.accent} text-white opacity-80` : 'bg-slate-100 text-slate-400'}`}>
                                                     {block.exercises.length} Exs
                                                 </span>
                                             </div>

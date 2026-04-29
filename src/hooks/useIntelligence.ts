@@ -4,7 +4,8 @@ import {
     calculateMuscleBalance, 
     detectBestDay, 
     calculateConsistency, 
-    getRecommendedNextBlock 
+    getRecommendedNextBlock,
+    parseSafeDate
 } from '../components/Common';
 import type { TrainingLog, TrainingBlock } from '../types';
 
@@ -13,7 +14,7 @@ export function useIntelligence(logs: TrainingLog[], blocks: TrainingBlock[], st
         const hasHistory = logs.length > 0;
         const sessionCount = logs.length;
         const weeksOfData = hasHistory ? 
-            (new Date().getTime() - new Date(logs[logs.length-1].date).getTime()) / (1000 * 60 * 60 * 24 * 7) : 0;
+            (new Date().getTime() - parseSafeDate(logs[logs.length-1].date).getTime()) / (1000 * 60 * 60 * 24 * 7) : 0;
 
         // Core Analytics
         const muscleBalance = calculateMuscleBalance(logs);

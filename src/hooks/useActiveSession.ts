@@ -31,7 +31,7 @@ export const useActiveSessionState = (_PLAN_BLOCKS: any[], logs: any[]) => {
         if (block.exercises.length > 0) {
             const initialProgress: any = {};
             block.exercises.forEach((ex: any) => {
-                const sortedHistory = [...logs].filter(l => l.gymData?.progress?.[ex.id]).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                const sortedHistory = [...logs].filter(l => l.gymData?.progress?.[ex.id]).sort((a,b) => a.date.localeCompare(b.date));
                 const lastLog = sortedHistory.pop();
                 const lastProgress = lastLog?.gymData?.progress?.[ex.id];
 

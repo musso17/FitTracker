@@ -1,10 +1,10 @@
 import React from 'react';
 import {
-    IconTarget, IconUser, IconBell, IconPlus, IconTrash,
-    IconDumbbell, IconSync,
-    IconLogout,
-    ICON_MAP, COLOR_OPTIONS, VISUAL_OPTIONS, ACTIVITY_TYPES
+    IconUser, IconBell, IconPlus, IconTrash,
+    IconDumbbell, IconSync, IconLogout, IconTrophy, IconChevronRight,
+    ICON_MAP, COLOR_OPTIONS, VISUAL_OPTIONS, ACTIVITY_TYPES, getSoftColorClasses
 } from '../constants';
+import { parseSafeDate } from './Common';
 import type { UserProfile, TrainingBlock } from '../types';
 
 interface ProfileProps {
@@ -23,6 +23,8 @@ interface ProfileProps {
     saveProfile: (newProfile: UserProfile) => Promise<boolean>;
     setIsExerciseSelectorOpen: (open: boolean) => void;
     setReplacingExerciseId: (id: string | null) => void;
+    logs: any[];
+    currentStreak: number;
 }
 
 const Profile: React.FC<ProfileProps> = ({
@@ -40,8 +42,27 @@ const Profile: React.FC<ProfileProps> = ({
     handleLogout,
     saveProfile,
     setIsExerciseSelectorOpen,
-    setReplacingExerciseId
+    setReplacingExerciseId,
+    logs,
+    currentStreak
 }) => {
+
+    const getDaysAgo = (dateStr: string) => {
+        if (!dateStr) return null;
+        const d = parseSafeDate(dateStr);
+        const now = new Date();
+        const diffTime = Math.abs(now.getTime() - d.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays === 0) return 'Hoy';
+        if (diffDays === 1) return 'Ayer';
+        return `Hace ${diffDays}d`;
+    };
+
+    const groupedBlocks = {
+        'En el Agua': planBlocks.filter(b => b.hasSurf || b.title.toLowerCase().includes('surf')),
+        'En el Gym': planBlocks.filter(b => !b.hasSurf && !b.title.toLowerCase().includes('surf') && !b.title.toLowerCase().includes('recuperación') && !b.title.toLowerCase().includes('yoga')),
+        'Recuperación': planBlocks.filter(b => b.title.toLowerCase().includes('recuperación') || b.title.toLowerCase().includes('yoga'))
+    };
 
     if (editingBlock) {
         const updateField = (field: string, value: any) => setEditingBlock((prev: any) => ({ ...prev, [field]: value }));
@@ -223,55 +244,118 @@ const Profile: React.FC<ProfileProps> = ({
 
     // --- Vista de Lista de Bloques ---
     return (
-        <div className="space-y-5 animate-in pb-28 pt-safe mt-4 px-4">
-            <header className="flex items-center justify-between">
+        <div className="space-y-6 animate-in pb-28 pt-safe mt-4 px-4">
+            <header className="flex items-center justify-between mb-2">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800">Mi Rutina</h1>
-                    <p className="text-sm text-slate-500">{planBlocks.length} bloques configurados</p>
+                    <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tight">Mi Rutina</h1>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{planBlocks.length} Módulos configurados</p>
                 </div>
-                <button onClick={() => setIsProfileModalOpen(true)} className="w-10 h-10 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 transition-colors shadow-sm">
-                    <IconTarget size={18} />
+                <button onClick={handleLogout} className="w-10 h-10 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center text-rose-400 active:scale-95 transition-all">
+                    <IconLogout size={18} />
                 </button>
             </header>
 
-            {/* Perfil físico rápido */}
-            <div className="bg-white rounded-2xl border border-slate-100 p-4 flex items-center gap-4 shadow-sm">
-                <div className="w-12 h-12 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center"><IconUser size={20} /></div>
-                <div className="flex-1">
-                    <p className="font-bold text-slate-800 text-sm">{currentUserName}</p>
-                    <p className="text-xs text-slate-500">{profile.height} cm · {profile.weight} kg</p>
+            {/* Perfil Físico Editorial */}
+            <div 
+                onClick={() => setIsProfileModalOpen(true)}
+                className="bg-white rounded-[2.5rem] border-2 border-slate-900 p-6 shadow-2xl shadow-slate-200 cursor-pointer active:scale-[0.98] transition-transform relative overflow-hidden group"
+            >
+                <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <IconUser size={120} />
                 </div>
-                <button onClick={() => setIsProfileModalOpen(true)} className="text-xs font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 active:scale-95 transition-transform">Editar</button>
-            </div>
-
-            {/* Lista de Bloques */}
-            <div className="space-y-3">
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Bloques de Entrenamiento</h3>
-                <div className="space-y-3">
-                    {planBlocks.map((block) => (
-                        <div
-                            key={block.id}
-                            onClick={() => setEditingBlock({ ...block, iconId: Object.keys(ICON_MAP).find(k => ICON_MAP[k] === block.icon) || 'dumbbell' })}
-                            className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm flex items-center justify-between group active:bg-slate-50 transition-colors"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${COLOR_OPTIONS.find(c => c.id === block.color)?.classes || 'bg-slate-100 text-slate-600'}`}>
-                                    {React.createElement(block.icon || IconDumbbell, { size: 18 })}
-                                </div>
-                                <div className="flex-1">
-                                    <h4 className="font-bold text-slate-800 text-sm">{block.title}</h4>
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase">{block.exercises?.length || 0} ejercicios</p>
-                                </div>
+                <div className="relative z-10 flex items-center gap-5">
+                    <div className="w-16 h-16 bg-slate-900 rounded-[1.5rem] flex items-center justify-center text-white relative shadow-lg">
+                        <IconUser size={28} />
+                        {currentStreak > 0 && (
+                            <div className="absolute -top-2 -right-2 bg-orange-500 text-white w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black border-2 border-white shadow-sm animate-bounce">
+                                {currentStreak}
                             </div>
-                            <div className="flex items-center gap-2">
-                                <IconChevronRight size={14} className="text-slate-300" />
+                        )}
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-black text-slate-900 leading-none">{currentUserName}</h2>
+                        <div className="flex gap-3 mt-2">
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Altura</span>
+                                <span className="text-sm font-black text-slate-700">{profile.height}cm</span>
+                            </div>
+                            <div className="w-px h-6 bg-slate-100 self-center" />
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Peso</span>
+                                <span className="text-sm font-black text-slate-700">{profile.weight}kg</span>
+                            </div>
+                            <div className="w-px h-6 bg-slate-100 self-center" />
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Nivel</span>
+                                <span className="text-sm font-black text-emerald-500">Avanzado</span>
                             </div>
                         </div>
-                    ))}
-                    <button onClick={() => setEditingBlock({ id: crypto.randomUUID(), title: '', color: 'slate', iconId: 'dumbbell', exercises: [], _isNew: true })} className="w-full border-2 border-dashed border-slate-200 rounded-2xl py-4 flex items-center justify-center gap-2 text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-all font-bold text-sm">
-                        <IconPlus size={16} /> Nuevo Bloque
-                    </button>
+                    </div>
                 </div>
+            </div>
+
+            {/* Agrupación de Bloques */}
+            <div className="space-y-8">
+                {Object.entries(groupedBlocks).map(([groupName, blocks]) => (
+                    <div key={groupName} className="space-y-4">
+                        <div className="flex items-center gap-3 px-1">
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{groupName}</h3>
+                            <div className="h-px bg-slate-100 flex-1" />
+                        </div>
+                        
+                        <div className="grid grid-cols-1 gap-3">
+                            {blocks.map((block) => {
+                                const lastDoneDate = logs.filter(l => l.blockId === block.id).sort((a,b) => b.date.localeCompare(a.date))[0]?.date;
+                                const daysAgo = getDaysAgo(lastDoneDate);
+                                const softColors = getSoftColorClasses(block.color);
+                                
+                                return (
+                                    <div
+                                        key={block.id}
+                                        onClick={() => setEditingBlock({ ...block, iconId: Object.keys(ICON_MAP).find(k => ICON_MAP[k] === block.icon) || 'dumbbell' })}
+                                        className="bg-white border border-slate-100 p-5 rounded-[2rem] shadow-sm flex items-center justify-between group active:bg-slate-50 transition-all cursor-pointer relative overflow-hidden"
+                                    >
+                                        <div className="flex items-center gap-5">
+                                            {/* Drag Handle (Visual only for now) */}
+                                            <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-20 transition-opacity">
+                                                <div className="w-4 h-0.5 bg-slate-900 rounded-full" />
+                                                <div className="w-4 h-0.5 bg-slate-900 rounded-full" />
+                                                <div className="w-4 h-0.5 bg-slate-900 rounded-full" />
+                                            </div>
+                                            
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${softColors} transition-transform group-hover:scale-105`}>
+                                                {React.createElement(block.icon || IconDumbbell, { size: 24 })}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-black text-slate-800 text-sm tracking-tight leading-none mb-1.5">{block.title}</h4>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{block.exercises?.length || 0} Exs</span>
+                                                    {daysAgo && (
+                                                        <>
+                                                            <div className="w-1 h-1 bg-slate-200 rounded-full" />
+                                                            <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-tighter italic">{daysAgo}</span>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            {lastDoneDate && <IconTrophy size={14} className="text-amber-400 opacity-20 group-hover:opacity-100 transition-all group-hover:scale-125" />}
+                                            <IconChevronRight size={16} className="text-slate-300 group-hover:text-slate-900 transition-colors" />
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ))}
+
+                <button 
+                    onClick={() => setEditingBlock({ id: crypto.randomUUID(), title: '', color: 'slate', iconId: 'dumbbell', exercises: [], _isNew: true })} 
+                    className="w-full border-2 border-dashed border-slate-200 rounded-[2rem] py-5 flex items-center justify-center gap-2 text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-all font-black text-xs uppercase tracking-widest bg-slate-50/50"
+                >
+                    <IconPlus size={18} /> Nuevo Bloque
+                </button>
             </div>
 
             {/* Centro de Notificaciones Inteligentes (Persistente en Supabase) */}
@@ -447,7 +531,5 @@ const Profile: React.FC<ProfileProps> = ({
     );
 };
 
-// Auxiliary icon for routine list
-const IconChevronRight = ({ size = 20, className = "" }) => <i className={`fas fa-chevron-right ${className}`} style={{ fontSize: size }}></i>;
 
 export default Profile;

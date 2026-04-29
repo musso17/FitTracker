@@ -460,7 +460,7 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({
                                     {!isSkipped && (
                                         <div className="space-y-3">
                                             {gymProgress[exercise.id]?.map((set: any, idx: number) => {
-                                                const prevLogsWithEx = logs.filter(l => l.id !== editingLogId && l.gymData?.progress?.[exercise.id]).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                                                const prevLogsWithEx = logs.filter(l => l.id !== editingLogId && l.gymData?.progress?.[exercise.id]).sort((a: any, b: any) => b.date.localeCompare(a.date));
                                                 const lastProgress = prevLogsWithEx.length > 0 ? prevLogsWithEx[0].gymData.progress[exercise.id] : null;
                                                 const ghostWeight = lastProgress && lastProgress[idx] && lastProgress[idx].completed ? lastProgress[idx].weight : '';
                                                 const ghostReps = lastProgress && lastProgress[idx] && lastProgress[idx].completed ? lastProgress[idx].reps : '';
@@ -555,7 +555,7 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({
                                                         <div className="flex items-center gap-3">
                                                             {exercise.type === 'weight' ? (
                                                                 <>
-                                                                    <div className="flex-[2] flex flex-col gap-1.5">
+                                                                    <div className="flex-1 flex flex-col gap-1.5">
                                                                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-3">PESO TOTAL (KG)</span>
                                                                         <PillStepper
                                                                             value={set.weight}
@@ -566,7 +566,7 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({
                                                                             onChange={(v) => setGymProgress((p: any) => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], weight: v }; return { ...p, [exercise.id]: o }; })}
                                                                         />
                                                                     </div>
-                                                                    <div className="flex-[2] flex flex-col gap-1.5">
+                                                                    <div className="flex-1 flex flex-col gap-1.5">
                                                                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-3">Reps</span>
                                                                         <PillStepper
                                                                             value={set.reps}
@@ -576,23 +576,6 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({
                                                                             onChange={(v) => setGymProgress((p: any) => { const o = [...p[exercise.id]]; o[idx] = { ...o[idx], reps: v }; return { ...p, [exercise.id]: o }; })}
                                                                             indicator={isRepsProgression && <span className="text-emerald-500">↑</span>}
                                                                         />
-                                                                    </div>
-                                                                    <div className="flex-1 flex flex-col gap-1.5">
-                                                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">RIR</span>
-                                                                        <button
-                                                                            onClick={() => setGymProgress((p: any) => {
-                                                                                const o = [...p[exercise.id]];
-                                                                                const nextRir = ((parseInt(o[idx].rir) || 0) + 1) % 5;
-                                                                                o[idx] = { ...o[idx], rir: String(nextRir) };
-                                                                                return { ...p, [exercise.id]: o };
-                                                                            })}
-                                                                            className={`h-11 rounded-2xl flex items-center justify-center text-sm font-black transition-all ${set.rir === '0' ? 'bg-orange-100 text-orange-600 border-2 border-orange-200' :
-                                                                                    set.rir === '1' ? 'bg-amber-100 text-amber-600 border-2 border-amber-200' :
-                                                                                        'bg-slate-100 text-slate-400'
-                                                                                }`}
-                                                                        >
-                                                                            {set.rir || '2'}
-                                                                        </button>
                                                                     </div>
                                                                 </>
                                                             ) : exercise.type === 'time' ? (

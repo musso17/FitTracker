@@ -24,7 +24,21 @@ export const IconArrowDown = ({ size = 20, className = "" }) => <i className={`f
 export const IconBell = ({ size = 20, className = "" }) => <i className={`fas fa-bell ${className}`} style={{ fontSize: size }}></i>;
 export const IconTrophy = ({ size = 20, className = "" }) => <i className={`fas fa-trophy ${className}`} style={{ fontSize: size }}></i>;
 export const IconSparkles = ({ size = 20, className = "" }) => <i className={`fas fa-sparkles ${className}`} style={{ fontSize: size }}></i>;
+export const IconMedal = ({ size = 20, className = "" }) => <i className={`fas fa-medal ${className}`} style={{ fontSize: size }}></i>;
+export const IconCrown = ({ size = 20, className = "" }) => <i className={`fas fa-crown ${className}`} style={{ fontSize: size }}></i>;
+export const IconZap = ({ size = 20, className = "" }) => <i className={`fas fa-bolt ${className}`} style={{ fontSize: size }}></i>;
+export const IconShield = ({ size = 20, className = "" }) => <i className={`fas fa-shield-alt ${className}`} style={{ fontSize: size }}></i>;
+export const IconWeight = ({ size = 20, className = "" }) => <i className={`fas fa-weight-hanging ${className}`} style={{ fontSize: size }}></i>;
+export const IconAward = ({ size = 20, className = "" }) => <i className={`fas fa-award ${className}`} style={{ fontSize: size }}></i>;
+export const IconTrendingUp = ({ size = 20, className = "" }) => <i className={`fas fa-trending-up ${className}`} style={{ fontSize: size }}></i>;
 export const IconInfoCircle = ({ size = 20, className = "" }) => <i className={`fas fa-info-circle ${className}`} style={{ fontSize: size }}></i>;
+
+export const ACHIEVEMENT_CATEGORIES = {
+    strength: { label: 'Fuerza', color: 'slate', icon: IconWeight, bg: 'bg-slate-900', accent: 'text-slate-400' },
+    consistency: { label: 'Hábito', color: 'indigo', icon: IconTrendingUp, bg: 'bg-indigo-600', accent: 'text-indigo-200' },
+    striking: { label: 'Striking', color: 'orange', icon: IconZap, bg: 'bg-orange-500', accent: 'text-orange-200' },
+    mastery: { label: 'Maestría', color: 'amber', icon: IconCrown, bg: 'bg-amber-500', accent: 'text-amber-200' }
+};
 
 // --- ICON MAP (for serialization/deserialization) ---
 export const ICON_MAP: Record<string, any> = {
@@ -34,6 +48,13 @@ export const ICON_MAP: Record<string, any> = {
     flame: IconFlame,
     heart: IconHeart,
     target: IconTarget,
+    TrendingUp: IconTrendingUp,
+    Zap: IconZap,
+    Crown: IconCrown,
+    Weight: IconWeight,
+    Medal: IconMedal,
+    Shield: IconShield,
+    Award: IconAward,
 };
 
 // --- COLOR OPTIONS ---
@@ -126,6 +147,20 @@ export const getColorClasses = (color: string): string => {
     }
 };
 
+export const getSoftColorClasses = (color: string): string => {
+    switch (color) {
+        case 'cyan': return 'bg-cyan-50 text-cyan-500';
+        case 'rose': return 'bg-rose-50 text-rose-500';
+        case 'teal': return 'bg-teal-50 text-teal-500';
+        case 'orange': return 'bg-orange-50 text-orange-500';
+        case 'purple': return 'bg-purple-50 text-purple-500';
+        case 'indigo': return 'bg-indigo-50 text-indigo-500';
+        case 'amber': return 'bg-amber-50 text-amber-500';
+        case 'slate': return 'bg-slate-50 text-slate-500';
+        default: return 'bg-slate-50 text-slate-500';
+    }
+};
+
 export const calcTonelaje = (gymProgress: any): number => {
     let total = 0;
     Object.values(gymProgress).forEach((sets: any) => {
@@ -186,4 +221,51 @@ export const calcStamina = (params: {
     score += gymStamina;
 
     return { score, label, gymStamina, completedSets };
+};
+
+export const getBlockMoodClasses = (block: any): { card: string, button: string, accent: string, text: string, border: string } => {
+    if (!block) return { card: 'bg-white border-slate-900', button: 'bg-slate-900', accent: 'bg-slate-900', text: 'text-slate-900', border: 'border-slate-900' };
+    
+    const title = block.title.toLowerCase();
+    const isRecovery = title.includes('recuperación') || title.includes('yoga') || title.includes('movilidad');
+    const isMT = title.includes('muay thai');
+    const isSurf = title.includes('surf') && !isRecovery;
+
+    if (isRecovery) {
+        return {
+            card: 'bg-gradient-to-br from-purple-50 via-emerald-50 to-indigo-50 shadow-purple-100/50',
+            button: 'bg-purple-600 hover:bg-purple-700 shadow-purple-200',
+            accent: 'bg-purple-600',
+            text: 'text-purple-900',
+            border: 'border-purple-200'
+        };
+    }
+
+    if (isMT) {
+        return {
+            card: 'bg-gradient-to-br from-orange-50 via-rose-50 to-orange-50 shadow-orange-100/50',
+            button: 'bg-orange-600 hover:bg-orange-700 shadow-orange-200',
+            accent: 'bg-orange-600',
+            text: 'text-orange-900',
+            border: 'border-orange-200'
+        };
+    }
+
+    if (isSurf) {
+        return {
+            card: 'bg-gradient-to-br from-cyan-50 via-blue-50 to-teal-50 shadow-cyan-100/50',
+            button: 'bg-cyan-600 hover:bg-cyan-700 shadow-cyan-200',
+            accent: 'bg-cyan-600',
+            text: 'text-cyan-900',
+            border: 'border-cyan-200'
+        };
+    }
+    
+    return {
+        card: 'bg-white shadow-slate-200',
+        button: 'bg-slate-900 hover:bg-slate-800 shadow-slate-200',
+        accent: 'bg-slate-900',
+        text: 'text-slate-900',
+        border: 'border-slate-900'
+    };
 };

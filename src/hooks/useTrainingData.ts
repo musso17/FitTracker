@@ -3,7 +3,7 @@ import { supabase } from '../utils/supabase';
 import { 
     isWithinCurrentWeek, isWithinPreviousWeek
 } from '../constants';
-import { ANA_PLAN, MARCELO_PLAN } from '../plans';
+import { ANA_PLAN, MARCELO_PLAN, PLAN_BY_ROLE } from '../plans';
 
 export const useTrainingData = (userSession: any, profile: any, userKey: string, PLAN_BLOCKS: any[]) => {
     const [logs, setLogs] = useState<any[]>([]);
@@ -102,7 +102,7 @@ export const useTrainingData = (userSession: any, profile: any, userKey: string,
         let streak = 0;
         let checkDate = new Date(today);
         
-        const trainingDates = new Set(filteredLogs.map(l => new Date(l.date).toISOString().split('T')[0]));
+        const trainingDates = new Set(filteredLogs.map(l => l.date));
         const getStr = (d: Date) => d.toISOString().split('T')[0];
         
         const todayStr = getStr(checkDate);
@@ -169,7 +169,7 @@ export const useTrainingData = (userSession: any, profile: any, userKey: string,
         });
 
         const insights: any[] = [];
-        const sortedLogs = [...filteredLogs].filter(l => l.gymData).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        const sortedLogs = [...filteredLogs].filter(l => l.gymData).sort((a,b) => a.date.localeCompare(b.date));
         const strengthMetrics: any[] = [];
         
         if (sortedLogs.length > 0) {
@@ -360,10 +360,22 @@ export const useTrainingData = (userSession: any, profile: any, userKey: string,
 
         const logrosCount = strengthMetrics.filter(m => m.currentMax >= m.goal && m.goal > 0).length;
 
-        const achievementsList = [
-            { id: 'first_round', title: 'Primer Round', desc: 'Primera sesión de striking.', icon: '🔥', color: 'orange', unlocked: filteredLogs.some(l => l.muayThaiData || l.blockId.toLowerCase().includes('muay')) },
-            { id: 'iron_habit', title: 'Hábito de Hierro', desc: '3+ sesiones esta semana.', icon: '📈', color: 'indigo', unlocked: workoutsThisWeek >= 3 },
-            { id: 'ton_club', title: 'Club de la Tonelada', desc: 'Mover +1 tonelada en una sesión.', icon: '🐘', color: 'slate', unlocked: filteredLogs.some(l => {
+        // --- CÁLCULO DE LOGROS (ACHIEVEMENTS) ---
+        const getAchievements = () => {
+            const sortedByDate = [...filteredLogs].sort((a, b) => a.date.localeCompare(b.date));
+            const findFirst = (predicate: (l: any) => boolean) => {
+                const log = sortedByDate.find(predicate);
+                return log ? log.date : null;
+            };
+
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+            // 1. Primer Round (Striking)
+            const firstRoundAt = findFirst(l => !!(l.muayThaiData || (l.blockId && l.blockId.toLowerCase().includes('muay'))));
+
+            // 2. Club de la Tonelada (1t in a session)
+            const tonClubAt = findFirst(l => {
                 let logTonnage = 0;
                 if (l.gymData?.progress) {
                     Object.values(l.gymData.progress).flat().forEach((s: any) => {
@@ -371,11 +383,119 @@ export const useTrainingData = (userSession: any, profile: any, userKey: string,
                     });
                 }
                 return logTonnage >= 1000;
-            }) },
-            { id: 'brute_force', title: 'Fuerza Bruta', desc: 'Mover +5 toneladas en una semana.', icon: '🏋️', color: 'slate', unlocked: tonnageThisWeek >= 5000 },
-            { id: 'zero_gravity', title: 'Gravedad Cero', desc: 'Dominio de tu peso corporal (Pullups).', icon: '☁️', color: 'cyan', unlocked: strengthMetrics.some(m => (m.name.toLowerCase().includes('dominada') || m.name.toLowerCase().includes('pullup')) && m.currentMax > 0) },
-            { id: 'streak_fire', title: 'Racha de Fuego', desc: '7 días seguidos entrenando.', icon: '⚡', color: 'orange', unlocked: (filteredLogs.length > 0 && currentStreak >= 7) }
-        ];
+            });
+
+            // 3. Fuerza Bruta (5t in a week)
+            const bruteForceTarget = 5000;
+            const bruteForceProgress = Math.min((tonnageThisWeek / bruteForceTarget) * 100, 100);
+            const bruteForceAt = tonnageThisWeek >= bruteForceTarget ? todayStr : null;
+
+            // 4. Gravedad Cero (Weighted Pullups)
+            const gravityZeroAt = findFirst(l => {
+                if (!l.gymData?.progress) return false;
+                return Object.entries(l.gymData.progress).some(([exId, sets]: [string, any]) => {
+                    const exDef = l.gymData.exercises?.find((e: any) => e.id === exId);
+                    const name = exDef?.name.toLowerCase() || '';
+                    return (name.includes('dominada') || name.includes('pullup')) && 
+                           sets.some((s: any) => s.completed && (parseFloat(s.weight) || 0) > 0);
+                });
+            });
+
+            // 5. Hábito de Hierro (3 sessions in current week)
+            const ironHabitTarget = 3;
+            const ironHabitProgress = Math.min((workoutsThisWeek / ironHabitTarget) * 100, 100);
+
+            // 6. Racha de Fuego (7 days)
+            const streakFireTarget = 7;
+            const streakProgress = Math.min((currentStreak / streakFireTarget) * 100, 100);
+            const streakFireAt = currentStreak >= streakFireTarget ? todayStr : null;
+
+            return [
+                { 
+                    id: 'first_round', title: 'Primer Round', category: 'striking', 
+                    desc: 'Completa tu primera sesión de técnica de striking.', 
+                    icon: 'Zap', color: 'orange', 
+                    unlocked: !!firstRoundAt, unlockedAt: firstRoundAt,
+                    action: 'striking'
+                },
+                { 
+                    id: 'iron_habit', title: 'Hábito de Hierro', category: 'consistency',
+                    desc: 'Entrena al menos 3 veces en una misma semana.', 
+                    icon: 'TrendingUp', color: 'indigo', 
+                    unlocked: workoutsThisWeek >= ironHabitTarget, 
+                    progress: ironHabitProgress,
+                    currentValue: workoutsThisWeek, targetValue: ironHabitTarget,
+                    action: 'plan'
+                },
+                { 
+                    id: 'ton_club', title: 'Club de la Tonelada', category: 'strength',
+                    desc: 'Mueve más de 1,000kg de volumen total en una sola sesión.', 
+                    icon: 'Weight', color: 'slate', 
+                    unlocked: !!tonClubAt, unlockedAt: tonClubAt,
+                    action: 'gym'
+                },
+                { 
+                    id: 'brute_force', title: 'Fuerza Bruta', category: 'strength',
+                    desc: 'Alcanza las 5 toneladas de volumen acumulado en una semana.', 
+                    icon: 'Dumbbell', color: 'slate', 
+                    unlocked: tonnageThisWeek >= bruteForceTarget, unlockedAt: bruteForceAt,
+                    progress: bruteForceProgress,
+                    currentValue: tonnageThisWeek, targetValue: bruteForceTarget,
+                    action: 'gym'
+                },
+                { 
+                    id: 'zero_gravity', title: 'Gravedad Cero', category: 'mastery',
+                    desc: 'Realiza dominadas con peso añadido (Lastre).', 
+                    icon: 'Crown', color: 'amber', 
+                    unlocked: !!gravityZeroAt, unlockedAt: gravityZeroAt,
+                    action: 'mastery'
+                },
+                { 
+                    id: 'streak_fire', title: 'Racha de Fuego', category: 'consistency',
+                    desc: 'Mantén una racha de entrenamiento de 7 días seguidos.', 
+                    icon: 'Flame', color: 'orange', 
+                    unlocked: currentStreak >= streakFireTarget, unlockedAt: streakFireAt,
+                    progress: streakProgress,
+                    currentValue: currentStreak, targetValue: streakFireTarget,
+                    action: 'home'
+                }
+            ];
+        };
+
+        const achievementsList = getAchievements();
+
+        // --- LOGS ENRICHMENT ---
+        const enrichedLogs = filteredLogs.map((log, idx) => {
+            let routineTitle = log.blockId || 'Entrenamiento';
+            for (const roleData of Object.values(PLAN_BY_ROLE)) {
+                const found = roleData.plan.find((p: any) => p.id === log.blockId);
+                if (found) {
+                    routineTitle = found.title;
+                    break;
+                }
+            }
+
+            let hasPR = false;
+            if (log.gymData?.progress) {
+                Object.keys(log.gymData.progress).forEach(exId => {
+                    const sets = log.gymData.progress[exId];
+                    sets.forEach((s: any) => {
+                        if (!s.completed) return;
+                        const currentVal = (parseFloat(s.weight) || 0) * (parseInt(s.reps) || 0);
+                        if (currentVal <= 0) return;
+                        
+                        const isNewRecord = !filteredLogs.slice(idx + 1).some(oldLog => {
+                            const oldSets = oldLog.gymData?.progress?.[exId];
+                            if (!oldSets) return false;
+                            return oldSets.some((os: any) => os.completed && (parseFloat(os.weight) || 0) * (parseInt(os.reps) || 0) >= currentVal);
+                        });
+                        if (isNewRecord) hasPR = true;
+                    });
+                });
+            }
+
+            return { ...log, routineTitle, hasPR };
+        });
 
         return {
             dashboardStats: {
@@ -386,12 +506,15 @@ export const useTrainingData = (userSession: any, profile: any, userKey: string,
                 achievements: achievementsList
             },
             dashboardInsights: insights.slice(0,3),
-            coachInsights: coachInsights.slice(0, 4)
+            coachInsights: coachInsights.slice(0, 4),
+            enrichedLogs
         };
     }, [logs, userKey, profile, PLAN_BLOCKS]);
 
     return {
-        logs, setLogs, loadLogs, deleteLog,
-        stats, currentStreak, isLoading
+        logs: stats.enrichedLogs || logs, 
+        setLogs, loadLogs, deleteLog,
+        stats: stats.dashboardStats, 
+        currentStreak, isLoading
     };
 };

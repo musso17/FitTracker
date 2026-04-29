@@ -48,7 +48,7 @@ export default function App() {
 
     // --- DATA & STATS ---
     const { logs, setLogs, deleteLog, stats, currentStreak } = useTrainingData(userSession, profile, userKey, PLAN_BLOCKS);
-    const { dashboardStats } = stats;
+    const dashboardStats = stats;
 
     // --- ACTIVE SESSION STATE ---
     const session = useActiveSessionState(PLAN_BLOCKS, logs);
@@ -255,6 +255,18 @@ export default function App() {
                                 showToast('Ya está en la sesión.', "info");
                                 return;
                             }
+                            if (!session.gymProgress[ex.id]) {
+                                const initialSets = Array.from({ length: ex.sets || 3 }, () => ({
+                                    weight: '',
+                                    reps: '',
+                                    completed: false
+                                }));
+                                session.setGymProgress((prev: any) => ({
+                                    ...prev,
+                                    [ex.id]: initialSets
+                                }));
+                            }
+
                             if (session.replacingExerciseId) {
                                 session.setSessionExercises(prev => prev.map(e => e.id === session.replacingExerciseId ? ex : e));
                             } else {
@@ -296,34 +308,53 @@ export default function App() {
                             saveProfile={saveProfile}
                             setIsExerciseSelectorOpen={session.setIsExerciseSelectorOpen}
                             setReplacingExerciseId={session.setReplacingExerciseId}
+                            logs={logs}
+                            currentStreak={currentStreak}
                         />
                     )}
                     {activeTab === 'recap' && <Recap sessionRecap={sessionRecap} currentStreak={currentStreak} setActiveTab={setActiveTab} setSessionRecap={setSessionRecap} />}
                 </main>
 
                 {activeTab !== 'active_session' && activeTab !== 'recap' && (
-                    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 pb-safe pt-2 px-6 pb-2 z-50">
-                        <div className="max-w-md mx-auto flex justify-around items-center">
-                            <button
-                                onClick={() => {
-                                    if (session.activeBlock) {
-                                        setActiveTab('active_session');
-                                        showToast(`Sesión en curso: ${session.activeBlock.title}`, "info");
-                                    } else {
-                                        setActiveTab('home');
-                                    }
-                                    window.scrollTo(0, 0);
-                                }}
-                                className={`flex flex-col items-center gap-1 p-2 relative ${activeTab === 'home' ? 'text-slate-900' : 'text-slate-400'}`}
-                            >
-                                <IconHome size={22} />
-                                {session.activeBlock && (
-                                    <span className="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full animate-ping" />
-                                )}
-                                <span className="text-[10px] font-semibold">Plan</span>
-                            </button>
-                            <button onClick={() => { setActiveTab('dashboard'); window.scrollTo(0, 0); }} className={`flex flex-col items-center gap-1 p-2 ${activeTab === 'dashboard' ? 'text-slate-900' : 'text-slate-400'}`}><IconTarget size={22} /><span className="text-[10px] font-semibold">Metas</span></button>
-                            <button onClick={() => { setActiveTab('profile'); window.scrollTo(0, 0); }} className={`flex flex-col items-center gap-1 p-2 ${activeTab === 'profile' ? 'text-slate-900' : 'text-slate-400'}`}><IconUser size={22} /><span className="text-[10px] font-semibold">Perfil</span></button>
+                    <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-100 pb-safe pt-2 px-8 pb-3 z-50">
+                        <div className="max-w-md mx-auto flex justify-between items-center">
+                            {[
+                                { id: 'home', label: 'Plan', icon: IconHome },
+                                { id: 'dashboard', label: 'Metas', icon: IconTarget },
+                                { id: 'profile', label: 'Perfil', icon: IconUser }
+                            ].map((tab) => {
+                                const isActive = activeTab === tab.id;
+                                return (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => {
+                                            if (tab.id === 'home' && session.activeBlock) {
+                                                setActiveTab('active_session');
+                                            } else {
+                                                setActiveTab(tab.id);
+                                            }
+                                            window.scrollTo(0, 0);
+                                        }}
+                                        className={`flex flex-col items-center gap-1.5 p-2 transition-all duration-300 relative ${isActive ? 'text-slate-900 scale-110' : 'text-slate-300 hover:text-slate-400'}`}
+                                    >
+                                        <div className={`transition-all duration-300 ${isActive ? 'translate-y-[-2px]' : ''}`}>
+                                            <tab.icon size={isActive ? 22 : 20} />
+                                        </div>
+                                        
+                                        {tab.id === 'home' && session.activeBlock && (
+                                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full border-2 border-white animate-pulse" />
+                                        )}
+                                        
+                                        <span className={`text-[9px] font-black uppercase tracking-widest transition-all ${isActive ? 'opacity-100' : 'opacity-0'}`}>
+                                            {tab.label}
+                                        </span>
+                                        
+                                        {isActive && (
+                                            <div className="absolute -bottom-1 w-1 h-1 bg-slate-900 rounded-full animate-in zoom-in" />
+                                        )}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </nav>
                 )}

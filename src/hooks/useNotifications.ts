@@ -101,8 +101,13 @@ export const useNotifications = (userId: string, storageKey: (k: string) => stri
             });
 
             if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.error || 'Failed to save subscription');
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const err = await response.json();
+                    throw new Error(err.error || 'Failed to save subscription');
+                } else {
+                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                }
             }
         } catch (error) {
             console.error('Server subscription save failed:', error);
