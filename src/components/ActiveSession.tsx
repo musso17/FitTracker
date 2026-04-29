@@ -1,53 +1,71 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-    IconArrowLeft, IconCheckCircle, IconChevronRight, IconClock, IconMoreVertical, IconTrash,
-    IconRotateDot, IconReplace, IconPlus, IconTarget, IconActivity, IconInfoCircle, IconX
+    IconArrowLeft, IconCheckCircle, IconMoreVertical, IconPlus, IconInfoCircle
 } from '../constants';
-import { suggestProgression, hapticFeedback, ACTIVITY_TYPES } from './Common';
+import { suggestProgression, hapticFeedback } from './Common';
 
 interface ActiveSessionProps {
-    session: any;
+    activeBlock: any;
+    gymProgress: any;
+    setGymProgress: any;
+    skippedExercises: any;
+    setSkippedExercises: any;
+    surfForm: any;
+    setSurfForm: any;
+    muayThaiForm: any;
+    setMuayThaiForm: any;
+    activityForm: any;
+    setActivityForm: any;
+    sessionExercises: any[];
+    setSessionExercises: any;
+    editingLogId: string | null;
+    setIsExerciseSelectorOpen: (open: boolean) => void;
+    setReplacingExerciseId: (id: string | null) => void;
+    
+    PLAN_BLOCKS: any[];
+    setActiveTab: (tab: string) => void;
     dashboardStats: any;
     logs: any[];
-    onBack: () => void;
-    onFinish: (recap: any) => void;
+    activeMenuId: string | null;
+    setActiveMenuId: (id: string | null) => void;
     startRestTimer: (tip?: string) => void;
+    handleFinishSession: () => void;
+    showToast: (msg: string, type: string) => void;
+    restTimer: number;
 }
 
 const ActiveSession: React.FC<ActiveSessionProps> = ({
-    session,
+    activeBlock,
+    gymProgress,
+    setGymProgress,
+    skippedExercises,
+    setSkippedExercises,
+    surfForm,
+    setSurfForm,
+    muayThaiForm,
+    setMuayThaiForm,
+    activityForm,
+    setActivityForm,
+    sessionExercises,
+    editingLogId,
+    setIsExerciseSelectorOpen,
+    setReplacingExerciseId,
+    setActiveTab,
     dashboardStats,
     logs,
-    onBack,
-    onFinish,
-    startRestTimer
+    activeMenuId,
+    setActiveMenuId,
+    startRestTimer,
+    handleFinishSession
 }) => {
-    const {
-        activeBlock,
-        gymProgress, setGymProgress,
-        skippedExercises, setSkippedExercises,
-        surfForm, setSurfForm,
-        muayThaiForm, setMuayThaiForm,
-        activityForm, setActivityForm,
-        sessionExercises, setSessionExercises,
-        editingLogId,
-        setActiveMenuId, activeMenuId,
-        setIsExerciseSelectorOpen,
-        setReplacingExerciseId
-    } = session;
-
     const [expandedTips, setExpandedTips] = useState<Record<string, boolean>>({});
-
-    const onFinishClick = () => {
-        onFinish(session.buildRecap());
-    };
 
     return (
         <div className="pb-32 bg-slate-50 min-h-screen animate-in fade-in duration-500">
             {/* Header Editorial */}
             <header className="bg-white border-b border-slate-100 px-5 pt-safe pb-6 flex items-center justify-between sticky top-0 z-50 backdrop-blur-md bg-white/90">
                 <div className="flex items-center gap-4">
-                    <button onClick={onBack} className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 active:scale-90 transition-transform">
+                    <button onClick={() => setActiveTab('home')} className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 active:scale-90 transition-transform">
                         <IconArrowLeft size={20} />
                     </button>
                     <div>
@@ -340,7 +358,7 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({
 
             <div className="px-5 mt-10">
                 <button
-                    onClick={onFinishClick}
+                    onClick={handleFinishSession}
                     className="w-full h-18 bg-slate-900 text-white rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-2xl shadow-slate-900/40 text-sm active:scale-95 transition-all flex items-center justify-center gap-4"
                 >
                     Finalizar Sesión
