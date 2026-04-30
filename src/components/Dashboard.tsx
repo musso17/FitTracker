@@ -516,18 +516,44 @@ const Dashboard: React.FC<DashboardProps> = ({
                         </div>
                     </div>
 
-                    {/* Bio Insight Box */}
-                    <div className="bg-white border-l-4 border-slate-900 p-8 rounded-r-[2.5rem] shadow-sm relative overflow-hidden group">
+                    {/* Gemini AI Insight Box */}
+                    <div className="bg-white border-l-4 border-indigo-500 p-8 rounded-r-[2.5rem] shadow-sm relative overflow-hidden group">
                         <div className="flex gap-4 items-start">
-                            <div className="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-900 shrink-0">
-                                <IconActivity size={20} />
+                            <div className="w-10 h-10 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-500 shrink-0">
+                                {intel.isLoadingAi ? (
+                                    <div className="w-5 h-5 border-2 border-indigo-200 border-t-indigo-500 rounded-full animate-spin" />
+                                ) : (
+                                    <span className="text-xl">✨</span>
+                                )}
                             </div>
-                            <div className="space-y-2">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Coach Insight</p>
-                                <p className="text-[14px] text-slate-600 font-bold leading-[1.7] tracking-tight">
-                                    Basado en el volumen acumulado, tu tren inferior es tu punto más fuerte. 
-                                    La fatiga en la espalda alta es moderada, ideal para tu próxima sesión de {logs.some(l => !!l.surfData) ? 'Surf' : 'Fuerza'}.
-                                </p>
+                            <div className="space-y-4 w-full">
+                                <div>
+                                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                                        IA Coach
+                                        {intel.isLoadingAi && <span className="normal-case tracking-normal text-[9px] opacity-70">Analizando...</span>}
+                                    </p>
+                                    <p className="text-[14px] text-slate-600 font-bold leading-[1.7] tracking-tight mt-1">
+                                        {intel.isLoadingAi 
+                                            ? "Procesando tus últimos entrenamientos con Gemini..." 
+                                            : (intel.aiSummary || "Completa más sesiones para recibir un análisis avanzado.")}
+                                    </p>
+                                </div>
+                                
+                                {!intel.isLoadingAi && intel.insights?.length > 0 && (
+                                    <div className="space-y-3 pt-2">
+                                        {intel.insights.map((insight: any, i: number) => (
+                                            <div key={i} className={`p-3 rounded-xl flex gap-3 items-start ${insight.type === 'success' ? 'bg-emerald-50' : insight.type === 'warning' ? 'bg-amber-50' : 'bg-slate-50'}`}>
+                                                <span className="text-lg leading-none">{insight.icon}</span>
+                                                <div>
+                                                    <h5 className={`text-[10px] font-black uppercase tracking-widest ${insight.type === 'success' ? 'text-emerald-600' : insight.type === 'warning' ? 'text-amber-600' : 'text-slate-600'}`}>
+                                                        {insight.title}
+                                                    </h5>
+                                                    <p className="text-xs text-slate-500 font-medium mt-0.5">{insight.message}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

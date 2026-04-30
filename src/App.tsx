@@ -61,7 +61,7 @@ export default function App() {
     const { notificationSettings, requestPermission, notify } = useNotifications(userSession?.user?.id || 'guest', storageKey, showToast);
 
     // --- INTELLIGENCE ---
-    const intel = useIntelligence(logs, PLAN_BLOCKS, currentStreak);
+    const intel = useIntelligence(logs, PLAN_BLOCKS, currentStreak, profile);
 
     // --- REFRESH SERVICE WORKER ---
     useEffect(() => {

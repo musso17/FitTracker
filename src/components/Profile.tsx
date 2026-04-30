@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     IconUser, IconBell, IconPlus, IconTrash,
     IconDumbbell, IconSync, IconLogout, IconTrophy, IconChevronRight,
@@ -6,6 +6,10 @@ import {
 } from '../constants';
 import { parseSafeDate } from './Common';
 import type { UserProfile, TrainingBlock } from '../types';
+import { auditRoutine } from '../services/ai';
+import type { RoutineAuditResult } from '../services/ai';
+import RoutineAuditModal from './RoutineAuditModal';
+import RoutineAuditForm from './RoutineAuditForm';
 
 interface ProfileProps {
     profile: UserProfile;
@@ -46,6 +50,35 @@ const Profile: React.FC<ProfileProps> = ({
     logs,
     currentStreak
 }) => {
+    const [showAuditModal, setShowAuditModal] = useState(false);
+    const [showAuditForm, setShowAuditForm] = useState(false);
+    const [isAuditing, setIsAuditing] = useState(false);
+    const [auditResult, setAuditResult] = useState<RoutineAuditResult | null>(null);
+
+    const handleAuditRoutine = async () => {
+        if (!profile.audit_preferences) {
+            setShowAuditForm(true);
+            return;
+        }
+        executeAudit(profile);
+    };
+
+    const executeAudit = async (currentProfile: any) => {
+        setShowAuditModal(true);
+        setIsAuditing(true);
+        setAuditResult(null);
+        
+        const result = await auditRoutine(planBlocks, logs, currentProfile);
+        setAuditResult(result);
+        setIsAuditing(false);
+    };
+
+    const handleAuditFormComplete = async (prefs: { objective: string[], feelings: string[], equipment: string[] }) => {
+        setShowAuditForm(false);
+        const updatedProfile = { ...profile, audit_preferences: prefs };
+        await saveProfile(updatedProfile);
+        executeAudit(updatedProfile);
+    };
 
     const getDaysAgo = (dateStr: string) => {
         if (!dateStr) return null;
@@ -358,6 +391,25 @@ const Profile: React.FC<ProfileProps> = ({
                 </button>
             </div>
 
+            {/* Auditoría con IA */}
+            <button 
+                onClick={handleAuditRoutine}
+                className="w-full bg-slate-900 text-white rounded-[2.5rem] p-6 shadow-xl shadow-slate-200 active:scale-[0.98] transition-transform flex items-center justify-between group overflow-hidden relative"
+            >
+                <div className="absolute -right-4 -top-4 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                    <span className="text-8xl">✨</span>
+                </div>
+                <div className="relative z-10 text-left">
+                    <h3 className="text-xl font-black tracking-tight mb-1">Auditar Rutina con IA</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        Análisis biomecánico en segundos
+                    </p>
+                </div>
+                <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm relative z-10">
+                    <IconChevronRight size={20} className="text-white group-hover:translate-x-1 transition-transform" />
+                </div>
+            </button>
+
             {/* Centro de Notificaciones Inteligentes (Persistente en Supabase) */}
             <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
                 <div className={`p-4 flex items-center justify-between transition-colors ${profile.notif_enabled ? 'bg-slate-900' : 'bg-slate-100'}`}>
@@ -527,6 +579,21 @@ const Profile: React.FC<ProfileProps> = ({
                     </button>
                 </div>
             </div>
+
+            {showAuditModal && (
+                <RoutineAuditModal 
+                    auditResult={auditResult} 
+                    isLoading={isAuditing} 
+                    onClose={() => setShowAuditModal(false)} 
+                />
+            )}
+
+            {showAuditForm && (
+                <RoutineAuditForm 
+                    onComplete={handleAuditFormComplete}
+                    onClose={() => setShowAuditForm(false)}
+                />
+            )}
         </div>
     );
 };

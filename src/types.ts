@@ -63,6 +63,11 @@ export interface UserProfile {
         coach: boolean;
         hydration: boolean;
     };
+    audit_preferences?: {
+        objective: string[];
+        feelings: string[];
+        equipment: string[];
+    };
 }
 
 export interface NotificationSettings {

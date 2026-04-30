@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { 
     calculateRecoveryScore, 
     calculateMuscleBalance, 
@@ -8,8 +8,23 @@ import {
     parseSafeDate
 } from '../components/Common';
 import type { TrainingLog, TrainingBlock } from '../types';
+import { generateAIAnalysis } from '../services/ai';
+import type { AIAnalysisResult, CoachInsight } from '../services/ai';
 
-export function useIntelligence(logs: TrainingLog[], blocks: TrainingBlock[], streak: number) {
+export function useIntelligence(logs: TrainingLog[], blocks: TrainingBlock[], streak: number, profile?: any) {
+    const [aiResult, setAiResult] = useState<AIAnalysisResult | null>(null);
+    const [isLoadingAi, setIsLoadingAi] = useState(false);
+
+    useEffect(() => {
+        if (logs.length > 0) {
+            setIsLoadingAi(true);
+            generateAIAnalysis(logs, profile).then(res => {
+                if (res) setAiResult(res);
+                setIsLoadingAi(false);
+            });
+        }
+    }, [logs, profile]);
+
     return useMemo(() => {
         const hasHistory = logs.length > 0;
         const sessionCount = logs.length;
@@ -27,12 +42,14 @@ export function useIntelligence(logs: TrainingLog[], blocks: TrainingBlock[], st
         const recommendedBlock = getRecommendedNextBlock(blocks, logs, muscleBalance);
 
         // Coach Insights Logic
-        const insights = [];
-        if (sessionCount < 8) {
-            insights.push("Sigue así. Necesito 8 sesiones para entender tus patrones.");
-        }
-        if (weeksOfData < 4) {
-            insights.push("Completa 4 semanas para activar el monitor de fatiga (ACWR).");
+        const insights: CoachInsight[] = aiResult?.insights || [];
+        if (!aiResult && !isLoadingAi) {
+            if (sessionCount < 8) {
+                insights.push({ type: 'info', title: 'Recopilando datos', message: "Sigue así. Necesito 8 sesiones para entender tus patrones.", icon: '📊' });
+            }
+            if (weeksOfData < 4) {
+                insights.push({ type: 'info', title: 'Fase de adaptación', message: "Completa 4 semanas para activar el monitor de fatiga (ACWR).", icon: '⏳' });
+            }
         }
 
         return {
@@ -51,7 +68,9 @@ export function useIntelligence(logs: TrainingLog[], blocks: TrainingBlock[], st
                 consistency: sessionCount < 8 ? "Entrena 8 sesiones para ver tu constancia" : null,
                 predictions: weeksOfData < 4 ? "Entrena 4 semanas para ver tus predicciones" : null
             },
-            insights
+            insights,
+            aiSummary: aiResult?.summary,
+            isLoadingAi
         };
-    }, [logs, blocks, streak]);
+    }, [logs, blocks, streak, aiResult, isLoadingAi]);
 }
