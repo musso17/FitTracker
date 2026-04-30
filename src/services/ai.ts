@@ -4,7 +4,7 @@ import type { TrainingLog } from '../types';
 
 // Inicializar el cliente de Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
 export interface CoachInsight {
     type: 'success' | 'warning' | 'info';
@@ -46,7 +46,8 @@ export async function generateAIAnalysis(logs: TrainingLog[], profile: any): Pro
                 let sessionSummary = '';
                 if (log.gymData && log.gymData.progress) {
                     sessionSummary = Object.entries(log.gymData.progress).map(([exId, sets]: [string, any]) => {
-                        const exName = exercisesData?.find(e => e.id === exId)?.name_es || exId;
+                        const sessionEx = log.gymData?.exercises?.find((e: any) => e.id === exId);
+                        const exName = sessionEx?.name || sessionEx?.name_es || exercisesData?.find(e => e.id === exId)?.name_es || exId;
                         const validSets = sets.filter((s: any) => s.completed);
                         if (validSets.length === 0) return '';
                         const maxWeight = Math.max(...validSets.map((s: any) => parseFloat(s.weight) || 0));
@@ -64,7 +65,17 @@ export async function generateAIAnalysis(logs: TrainingLog[], profile: any): Pro
 
         // 3. Crear el prompt
         const prompt = `
-Eres un entrenador personal de élite, experto en biomecánica y sobrecarga progresiva.
+Eres un entrenador personal de élite, experto en biomecánica y sobrecarga progresiva. 
+Específicamente, entiendes la filosofía de entrenamiento de Marcelo (Home Strength + Muay Thai):
+
+Principios Biomecánicos de Marcelo:
+- Sentadilla Búlgara: Maximizar déficit y tiempo bajo tensión (3s bajada, 1s pausa) para estabilidad en un solo pie (pateos).
+- Flexiones Arqueras/Déficit: Usar peso corporal asimétrico o profundidad extra para reemplazar el Press de Banca pesado.
+- Remo Pendlay: Eliminar la inercia deteniendo el peso en el suelo en cada rep para fuerza concéntrica pura (Clinch).
+- Extensiones Overhead (Copa): Estirar la cabeza larga del tríceps para mejorar el "snap" en golpes rectos.
+- Pliometría: Transferencia elástica de fuerza para rodillazos con salto y salidas rápidas.
+- Estricto (Pared): Usar la pared en Curls de bíceps para anular el balanceo y maximizar el aislamiento con poco peso.
+
 Analiza el historial reciente de entrenamiento de este usuario y proporciona insights accionables.
 
 Perfil del usuario:
@@ -78,8 +89,8 @@ ${catalogSummary}
 
 Instrucciones:
 1. Analiza si hay un estancamiento o un buen progreso (basado en el historial).
-2. Proporciona de 2 a 3 recomendaciones directas y concisas.
-3. Evalúa la fatiga muscular en una escala de 0 a 4 (0: Recuperado, 1: Leve, 2: Medio, 3: Fatiga Alta, 4: Sobreentrenamiento) para los grupos: "push", "pull", "legs", "core". Basado en el volumen de entrenamiento de esos grupos.
+2. Proporciona de 2 a 3 recomendaciones directas y concisas. Valora positivamente si Marcelo respeta los tiempos de pausa y la técnica estricta.
+3. Evalúa la fatiga muscular en una escala de 0 a 4 para los grupos: "push", "pull", "legs", "core".
 4. El tono debe ser directo, profesional y motivador (estilo "coach").
 5. Si ves que siempre hace los mismos ejercicios, recomiéndale probar alguno del catálogo basándote en el patrón de movimiento.
 

@@ -371,10 +371,92 @@ export const useTrainingData = (userSession: any, profile: any, userKey: string,
             const today = new Date();
             const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-            // 1. Primer Round (Striking)
+            if (userKey !== 'ana') {
+                // LOGROS MARCELO (Muay Thai + Fuerza Casera)
+                const firstRoundAt = findFirst(l => !!(l.muayThaiData || (l.blockId && l.blockId.toLowerCase().includes('muay'))));
+                
+                const muayThaiThisWeek = filteredLogs.filter(l => (l.muayThaiData || (l.blockId && l.blockId.toLowerCase().includes('muay'))) && isWithinCurrentWeek(l.date)).length;
+                const furyTarget = 3;
+                const furyProgress = Math.min((muayThaiThisWeek / furyTarget) * 100, 100);
+                
+                const homeFuerzaThisWeek = filteredLogs.filter(l => l.gymData && !l.muayThaiData && !l.blockId.toLowerCase().includes('muay') && isWithinCurrentWeek(l.date)).length;
+                const homeFuerzaTarget = 2;
+                const homeFuerzaProgress = Math.min((homeFuerzaThisWeek / homeFuerzaTarget) * 100, 100);
+
+                const piernasAceroAt = findFirst(l => {
+                    if (!l.gymData?.progress) return false;
+                    return Object.entries(l.gymData.progress).some(([exId, sets]: [string, any]) => {
+                        const exDef = (l.gymData.exercises || MARCELO_PLAN.flatMap(b => b.exercises))?.find((e: any) => e.id === exId);
+                        const name = exDef?.name.toLowerCase() || '';
+                        return (name.includes('búlgara') || name.includes('bulgarian')) && 
+                               sets.some((s: any) => s.completed && (parseFloat(s.weight) || 0) >= 16);
+                    });
+                });
+
+                const ironHabitTarget = 4; // Subimos la disciplina a 4 (ej. 3 MT + 1 Fuerza)
+                const ironHabitProgress = Math.min((workoutsThisWeek / ironHabitTarget) * 100, 100);
+
+                const streakFireTarget = 7;
+                const streakProgress = Math.min((currentStreak / streakFireTarget) * 100, 100);
+                const streakFireAt = currentStreak >= streakFireTarget ? todayStr : null;
+
+                return [
+                    { 
+                        id: 'first_round', title: 'Primer Round', category: 'striking', 
+                        desc: 'Completa tu primera sesión de técnica de striking.', 
+                        icon: 'Zap', color: 'orange', 
+                        unlocked: !!firstRoundAt, unlockedAt: firstRoundAt,
+                        action: 'striking'
+                    },
+                    { 
+                        id: 'thai_fury', title: 'Furia Tailandesa', category: 'striking',
+                        desc: 'Completa 3 sesiones de Muay Thai en una misma semana.', 
+                        icon: 'Flame', color: 'rose', 
+                        unlocked: muayThaiThisWeek >= furyTarget, 
+                        progress: furyProgress,
+                        currentValue: muayThaiThisWeek, targetValue: furyTarget,
+                        action: 'striking'
+                    },
+                    { 
+                        id: 'home_warrior', title: 'Guerrero Casero', category: 'strength',
+                        desc: 'Completa 2 sesiones de fuerza en casa por semana.', 
+                        icon: 'Dumbbell', color: 'slate', 
+                        unlocked: homeFuerzaThisWeek >= homeFuerzaTarget,
+                        progress: homeFuerzaProgress,
+                        currentValue: homeFuerzaThisWeek, targetValue: homeFuerzaTarget,
+                        action: 'home'
+                    },
+                    { 
+                        id: 'iron_legs', title: 'Piernas de Acero', category: 'mastery',
+                        desc: 'Levanta 16kg o más totales en Sentadilla Búlgara.', 
+                        icon: 'Weight', color: 'slate', 
+                        unlocked: !!piernasAceroAt, unlockedAt: piernasAceroAt,
+                        action: 'mastery'
+                    },
+                    { 
+                        id: 'iron_habit', title: 'Disciplina', category: 'consistency',
+                        desc: 'Entrena al menos 4 veces en una misma semana.', 
+                        icon: 'TrendingUp', color: 'indigo', 
+                        unlocked: workoutsThisWeek >= ironHabitTarget, 
+                        progress: ironHabitProgress,
+                        currentValue: workoutsThisWeek, targetValue: ironHabitTarget,
+                        action: 'plan'
+                    },
+                    { 
+                        id: 'streak_fire', title: 'Racha Constante', category: 'consistency',
+                        desc: 'Mantén una racha de entrenamiento de 7 días seguidos.', 
+                        icon: 'Activity', color: 'emerald', 
+                        unlocked: currentStreak >= streakFireTarget, unlockedAt: streakFireAt,
+                        progress: streakProgress,
+                        currentValue: currentStreak, targetValue: streakFireTarget,
+                        action: 'home'
+                    }
+                ];
+            }
+
+            // LOGROS ANA / DEFAULT (Gym + Surf)
             const firstRoundAt = findFirst(l => !!(l.muayThaiData || (l.blockId && l.blockId.toLowerCase().includes('muay'))));
 
-            // 2. Club de la Tonelada (1t in a session)
             const tonClubAt = findFirst(l => {
                 let logTonnage = 0;
                 if (l.gymData?.progress) {
@@ -385,27 +467,23 @@ export const useTrainingData = (userSession: any, profile: any, userKey: string,
                 return logTonnage >= 1000;
             });
 
-            // 3. Fuerza Bruta (5t in a week)
             const bruteForceTarget = 5000;
             const bruteForceProgress = Math.min((tonnageThisWeek / bruteForceTarget) * 100, 100);
             const bruteForceAt = tonnageThisWeek >= bruteForceTarget ? todayStr : null;
 
-            // 4. Gravedad Cero (Weighted Pullups)
             const gravityZeroAt = findFirst(l => {
                 if (!l.gymData?.progress) return false;
                 return Object.entries(l.gymData.progress).some(([exId, sets]: [string, any]) => {
-                    const exDef = l.gymData.exercises?.find((e: any) => e.id === exId);
+                    const exDef = (l.gymData.exercises || ANA_PLAN.flatMap(b => b.exercises))?.find((e: any) => e.id === exId);
                     const name = exDef?.name.toLowerCase() || '';
                     return (name.includes('dominada') || name.includes('pullup')) && 
                            sets.some((s: any) => s.completed && (parseFloat(s.weight) || 0) > 0);
                 });
             });
 
-            // 5. Hábito de Hierro (3 sessions in current week)
             const ironHabitTarget = 3;
             const ironHabitProgress = Math.min((workoutsThisWeek / ironHabitTarget) * 100, 100);
 
-            // 6. Racha de Fuego (7 days)
             const streakFireTarget = 7;
             const streakProgress = Math.min((currentStreak / streakFireTarget) * 100, 100);
             const streakFireAt = currentStreak >= streakFireTarget ? todayStr : null;

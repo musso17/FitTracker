@@ -72,56 +72,35 @@ export const ANA_PLAN: TrainingBlock[] = [
 
 export const MARCELO_PLAN: TrainingBlock[] = [
     {
-        id: 'mar_b1', title: 'Muay Thai: Clase', icon: IconFlame, color: 'orange',
-        note: 'Clase guiada. Enfoque en volumen e intensidad constante (1h 20m).', hasSurf: false, hasMuayThai: true,
+        id: 'mar_b1', title: 'Muay Thai (Técnica y Cardio)', icon: IconFlame, color: 'orange',
+        note: 'Lunes, Miércoles y Viernes. Enfoque en técnica y resistencia. Menos es más.', hasSurf: false, hasMuayThai: true,
         exercises: []
     },
     {
-        id: 'mar_b2', title: 'Torso A: Masa Total (Pecho+)', icon: IconDumbbell, color: 'rose',
-        note: 'Objetivo: Construir masa muscular en todo el torso, con énfasis en el pecho superior.', hasSurf: false,
+        id: 'mar_b2', title: 'Día 1: Empuje y Cuádriceps', icon: IconDumbbell, color: 'rose',
+        note: 'Maximizando el déficit. Carga unilateral para proteger la estabilidad en pateos (Middle Kicks).', hasSurf: false,
         exercises: [
-            { id: 'm6', name: 'Press de Banca Plano', sets: 4, target: '6-8', type: 'weight', tip: 'Carga pesada. Descanso: 120-180s. Controla la bajada.', visual: 'benchpress' },
-            { id: 'm7', name: 'Remo con Barra (45º)', sets: 4, target: '8-10', type: 'weight', tip: 'Carga pesada. Descanso: 120s. Codos a la cadera.', visual: 'row' },
-            { id: 'm8', name: 'Press Inclinado (Manc)', sets: 3, target: '8-10', type: 'weight', tip: 'Prioriza pecho superior. Descanso: 90s. Controla el estiramiento.', visual: 'benchpress' },
-            { id: 'm9', name: 'Extensión Tríceps Overhead', sets: 3, target: '10-12', type: 'weight', tip: 'Estira la cabeza larga al máximo. Descanso: 90s.', visual: 'push' },
-            { id: 'm10', name: 'Curl Bíceps Inclinado', sets: 3, target: '10-12', type: 'weight', tip: 'Máxima tensión en estiramiento. Descanso: 90s.', visual: 'pull' }
+            { id: 'm1', name: 'Sentadilla Búlgara (Mancuernas)', sets: 4, target: 'Fallo/RIR 1', type: 'weight', tip: 'Baja en 3s, pausa 1s abajo. Aísla la carga en un solo cuádriceps. Brutal para equilibrio en un solo pie.', visual: 'squat' },
+            { id: 'm2', name: 'Flexiones Arqueras/Déficit', sets: 4, target: 'Fallo', type: 'check', tip: 'Déficit (manos en discos) o Arqueras (brazo estirado). Estira fibras al máximo para hipertrofia sin press pesado.', visual: 'benchpress' },
+            { id: 'm3', name: 'Press Militar de Pie (Barra)', sets: 4, target: '12-15', type: 'weight', tip: 'Sin impulso de rodillas. Glúteos/abdomen apretados. Tu seguro de vida para no bajar la guardia en el 3er round.', visual: 'push' },
+            { id: 'm4', name: 'Extensiones Tríceps Copa', sets: 3, target: '15', type: 'weight', tip: 'Codo sobre la cabeza para estirar la cabeza larga. El tríceps es el pistón que da el "snap" a tus Jabs y Cross.', visual: 'push' }
         ]
     },
     {
-        id: 'mar_b3', title: 'Piernas A: Fuerza y Core', icon: IconActivity, color: 'teal',
-        note: 'Objetivo: Desarrollar fuerza y masa en piernas delgadas y fortalecer el núcleo.', hasSurf: false,
+        id: 'mar_b3', title: 'Día 2: Jalón y Cadena Posterior', icon: IconActivity, color: 'teal',
+        note: 'Estabilidad para pateos y potencia rotacional. Clinch y tracción pura.', hasSurf: false,
         exercises: [
-            { id: 'm11', name: 'Sentadilla con Barra', sets: 4, target: '6-8', type: 'weight', tip: 'Carga pesada. Descanso: 180s. Baja lo más profundo posible.', visual: 'squat' },
-            { id: 'm12', name: 'Peso Muerto Rumano (RDL)', sets: 4, target: '8-10', type: 'weight', tip: 'Carga pesada. Descanso: 120-180s. Siente el tirón en isquios.', visual: 'hinge' },
-            { id: 'm13', name: 'Zancadas Búlgaras', sets: 3, target: '10', type: 'weight', tip: 'Torso inclinado adelante para glúteo. Descanso: 90s.', visual: 'squat' },
-            { id: 'm14', name: 'Deadbug (Core)', sets: 3, target: '12', type: 'check', tip: 'Protege lumbar. Fortalece el núcleo. Descanso: 60s.', visual: 'core' }
+            { id: 'm5', name: 'RDL a UNA pierna (Manc)', sets: 4, target: '12/pierna', type: 'weight', tip: 'Espalda recta, pierna libre como balancín. Hazlo descalzo para ganar equilibrio y potencia rotacional en el tatami.', visual: 'hinge' },
+            { id: 'm6', name: 'Remo Pendlay Unilateral', sets: 4, target: '10-12/lado', type: 'weight', tip: 'Toca suelo en cada rep. Sin inercia. Genera fuerza desde cero. Crítico para la fuerza de tracción en el Clinch.', visual: 'row' },
+            { id: 'm7', name: 'Zancadas Pliométricas (Manc)', sets: 3, target: '20 saltos', type: 'weight', tip: 'Fibras Tipo II. Salta explosivo y cambia en el aire. Motor para rodillazos con salto y salidas rápidas.', visual: 'squat' },
+            { id: 'm8', name: 'Curl Bíceps Estricto (Barra)', sets: 3, target: '15', type: 'weight', tip: 'Talones/glúteos pegados a la pared. Cero balanceo. Aislamiento al 100% para destrozar el bíceps con poco peso.', visual: 'pull' }
         ]
     },
     {
-        id: 'mar_b4', title: 'Torso B: V-Taper y Postura', icon: IconFlame, color: 'orange',
-        note: 'Objetivo: Ensanchar espalda (V-taper) y corregir hombros redondeados.', hasSurf: false,
+        id: 'mar_b4', title: 'Descanso Total / Activo Ligero', icon: IconHeart, color: 'purple',
+        note: 'Sábado y Domingo. Reset de cortisol y recuperación articular.', hasSurf: false,
         exercises: [
-            { id: 'm15', name: 'Press Inclinado (Barra)', sets: 4, target: '8-10', type: 'weight', tip: 'Carga moderada. Descanso: 120s. Énfasis pecho superior.', visual: 'benchpress' },
-            { id: 'm16', name: 'Dominadas (Wide Grip)', sets: 4, target: 'Fallo (-1)', type: 'check', tip: 'Mejor compuesto para espalda ancha. Descanso: 120-180s.', visual: 'pull' },
-            { id: 'm17', name: 'Elevaciones Laterales', sets: 4, target: '12-15', type: 'weight', tip: 'Poco peso, tensión constante. Descanso: 60-90s.', visual: 'push' },
-            { id: 'm18', name: 'Face Pull con cuerda', sets: 3, target: '12-15', type: 'weight', tip: 'Corrige hombros redondeados. Descanso: 90s.', visual: 'pull' }
-        ]
-    },
-    {
-        id: 'mar_b5', title: 'Piernas B: Daño y Volumen', icon: IconActivity, color: 'cyan',
-        note: 'Objetivo: Maximizar crecimiento con ejercicios específicos.', hasSurf: false,
-        exercises: [
-            { id: 'm19', name: 'Prensa Inclinada', sets: 4, target: '10-12', type: 'weight', tip: 'Carga moderada. Descanso: 120s. Baja profundo.', visual: 'squat' },
-            { id: 'm20', name: 'Curl Femoral Sentado', sets: 4, target: '10-12', type: 'weight', tip: 'Énfasis en el estiramiento. Descanso: 90s.', visual: 'hinge' },
-            { id: 'm21', name: 'Extensión Cuádriceps', sets: 3, target: '12-15', type: 'weight', tip: 'Énfasis en aguantar fase baja. Descanso: 90s.', visual: 'squat' },
-            { id: 'm22', name: 'Plancha Pesada', sets: 3, target: '45-60s', type: 'weight', tip: 'Añade disco en la espalda. Descanso: 60s.', visual: 'core' }
-        ]
-    },
-    {
-        id: 'mar_b6', title: 'Recuperación Activa', icon: IconHeart, color: 'purple',
-        note: 'Objetivo: Reset de Cortisol y recuperación. Sueño de 8h obligatorio.', hasSurf: false,
-        exercises: [
-            { id: 'm23', name: 'Caminata Ligera (Z2)', sets: 1, target: '45-60m', type: 'time', tip: 'No correr. Baja el cortisol.', visual: 'core' }
+            { id: 'm9', name: 'Caminata Ligera / Descanso', sets: 1, target: 'Libre', type: 'time', tip: 'Recuperación de SNC. Menos es más.', visual: 'core' }
         ]
     }
 ];
