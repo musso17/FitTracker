@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
     IconUser, IconBell, IconPlus, IconTrash,
     IconDumbbell, IconSync, IconLogout, IconTrophy, IconChevronRight,
@@ -6,7 +6,6 @@ import {
 } from '../constants';
 import { parseSafeDate } from './Common';
 import type { UserProfile, TrainingBlock } from '../types';
-import { supabase } from '../utils/supabase';
 
 interface ProfileProps {
     profile: UserProfile;
