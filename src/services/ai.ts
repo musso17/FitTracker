@@ -115,6 +115,12 @@ export interface RoutineAuditRecommendation {
     action: 'keep' | 'add' | 'remove' | 'swap';
     target: string;
     reason: string;
+    blockId?: string;
+    targetExerciseId?: string;
+    newExerciseId?: string;
+    newExerciseName?: string;
+    recommendedSets?: number;
+    recommendedReps?: string;
 }
 
 export interface RoutineAuditResult {
@@ -138,13 +144,13 @@ export async function auditRoutine(planBlocks: any[], logs: TrainingLog[], profi
         const routineSummary = planBlocks.map(b => {
             const exs = b.exercises.map((e: any) => {
                 const dbEx = exercisesData?.find(d => d.id === e.id);
-                return `- ${e.name} (${e.sets}x${e.target}) [${dbEx?.primary_muscle || 'N/A'}]`;
+                return `- [ex_id: ${e.id}] ${e.name} (${e.sets}x${e.target}) [${dbEx?.primary_muscle || 'N/A'}]`;
             }).join('\n');
-            return `Bloque: ${b.title}\n${exs}`;
+            return `Bloque: ${b.title} [block_id: ${b.id}]\n${exs}`;
         }).join('\n\n');
 
         const catalogSummary = exercisesData?.map(ex => 
-            `- ${ex.name_es} (${ex.primary_muscle})`
+            `- [cat_id: ${ex.id}] ${ex.name_es} (${ex.primary_muscle})`
         ).join('\n') || '';
 
         const recentLogs = [...logs]
@@ -178,11 +184,17 @@ Instrucciones:
 4. Responde ÚNICAMENTE con un JSON con el formato:
 {
   "verdict": "Veredicto general de la rutina alineado con sus preferencias (1-2 oraciones).",
-  "balanceScore": 85, // Número 0 a 100
+  "balanceScore": 85,
   "recommendations": [
     {
       "action": "keep" | "add" | "remove" | "swap",
-      "target": "Nombre del ejercicio o grupo muscular",
+      "blockId": "id del bloque afectado (OBLIGATORIO para add/remove/swap)",
+      "targetExerciseId": "ex_id del ejercicio a modificar/eliminar (OBLIGATORIO para remove/swap)",
+      "newExerciseId": "cat_id del nuevo ejercicio del catálogo (OBLIGATORIO para add/swap)",
+      "newExerciseName": "nombre exacto del nuevo ejercicio del catálogo (OBLIGATORIO para add/swap)",
+      "recommendedSets": 3, // OBLIGATORIO para add/swap (ej. 3, 4)
+      "recommendedReps": "10 reps", // OBLIGATORIO para add/swap (ej. "8-12 reps", "al fallo")
+      "target": "Título corto de la acción",
       "reason": "Por qué lo recomiendas basado en su objetivo/sensación/equipo"
     }
   ]

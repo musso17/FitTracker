@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { IconX, IconActivity, IconTrophy } from '../constants';
-import type { RoutineAuditResult } from '../services/ai';
+import type { RoutineAuditResult, RoutineAuditRecommendation } from '../services/ai';
 
 interface RoutineAuditModalProps {
     auditResult: RoutineAuditResult | null;
     isLoading: boolean;
     onClose: () => void;
+    onApply?: (rec: RoutineAuditRecommendation) => Promise<void>;
 }
 
 const actionConfig = {
@@ -15,7 +16,16 @@ const actionConfig = {
     swap: { color: 'amber', icon: '🔄', label: 'Cambiar' },
 };
 
-const RoutineAuditModal: React.FC<RoutineAuditModalProps> = ({ auditResult, isLoading, onClose }) => {
+const RoutineAuditModal: React.FC<RoutineAuditModalProps> = ({ auditResult, isLoading, onClose, onApply }) => {
+    const [appliedRecs, setAppliedRecs] = useState<Set<number>>(new Set());
+
+    const handleApply = async (rec: RoutineAuditRecommendation, index: number) => {
+        if (onApply && !appliedRecs.has(index)) {
+            await onApply(rec);
+            setAppliedRecs(new Set(appliedRecs).add(index));
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-end justify-center animate-in fade-in duration-300" onClick={onClose}>
             <div 
@@ -77,22 +87,43 @@ const RoutineAuditModal: React.FC<RoutineAuditModalProps> = ({ auditResult, isLo
                                 <div className="space-y-3">
                                     {auditResult.recommendations.map((rec, idx) => {
                                         const config = actionConfig[rec.action];
+                                        const isApplied = appliedRecs.has(idx);
+                                        const canApply = rec.action !== 'keep' && onApply && rec.blockId;
+                                        
                                         return (
-                                            <div key={idx} className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm flex items-start gap-4 group hover:border-slate-200 transition-colors">
-                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-${config.color}-50 text-${config.color}-500 shrink-0`}>
-                                                    {config.icon}
-                                                </div>
-                                                <div className="pt-0.5">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <span className={`text-[9px] font-black uppercase tracking-widest text-${config.color}-500 bg-${config.color}-50 px-1.5 py-0.5 rounded`}>
-                                                            {config.label}
-                                                        </span>
-                                                        <h5 className="font-black text-slate-800 text-sm">{rec.target}</h5>
+                                            <div key={idx} className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm flex flex-col gap-3 group hover:border-slate-200 transition-colors">
+                                                <div className="flex items-start gap-4">
+                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-${config.color}-50 text-${config.color}-500 shrink-0`}>
+                                                        {config.icon}
                                                     </div>
-                                                    <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
-                                                        {rec.reason}
-                                                    </p>
+                                                    <div className="pt-0.5 flex-1">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <span className={`text-[9px] font-black uppercase tracking-widest text-${config.color}-500 bg-${config.color}-50 px-1.5 py-0.5 rounded`}>
+                                                                {config.label}
+                                                            </span>
+                                                            <h5 className="font-black text-slate-800 text-sm">{rec.target}</h5>
+                                                        </div>
+                                                        <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                                                            {rec.reason}
+                                                        </p>
+                                                    </div>
                                                 </div>
+                                                
+                                                {canApply && (
+                                                    <div className="flex justify-end pt-2 border-t border-slate-50">
+                                                        <button 
+                                                            onClick={() => handleApply(rec, idx)}
+                                                            disabled={isApplied}
+                                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                                                                isApplied 
+                                                                    ? 'bg-emerald-50 text-emerald-500 cursor-default' 
+                                                                    : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 active:scale-95'
+                                                            }`}
+                                                        >
+                                                            {isApplied ? '✅ Aplicado' : 'Aplicar cambio'}
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         );
                                     })}

@@ -7,9 +7,10 @@ import {
 import { parseSafeDate } from './Common';
 import type { UserProfile, TrainingBlock } from '../types';
 import { auditRoutine } from '../services/ai';
-import type { RoutineAuditResult } from '../services/ai';
+import type { RoutineAuditResult, RoutineAuditRecommendation } from '../services/ai';
 import RoutineAuditModal from './RoutineAuditModal';
 import RoutineAuditForm from './RoutineAuditForm';
+import { supabase } from '../utils/supabase';
 
 interface ProfileProps {
     profile: UserProfile;
@@ -78,6 +79,53 @@ const Profile: React.FC<ProfileProps> = ({
         const updatedProfile = { ...profile, audit_preferences: prefs };
         await saveProfile(updatedProfile);
         executeAudit(updatedProfile);
+    };
+
+    const handleApplyRecommendation = async (rec: RoutineAuditRecommendation) => {
+        if (!rec.blockId) return;
+        
+        let newBlocks = [...planBlocks];
+        const blockIndex = newBlocks.findIndex(b => b.id === rec.blockId);
+        if (blockIndex === -1) return;
+        
+        const block = { ...newBlocks[blockIndex], exercises: [...newBlocks[blockIndex].exercises] };
+
+        let dbEx = null;
+        if ((rec.action === 'add' || rec.action === 'swap') && rec.newExerciseId) {
+            const { data } = await supabase.from('exercises').select('*').eq('id', rec.newExerciseId).single();
+            dbEx = data;
+        }
+
+        if (rec.action === 'remove' && rec.targetExerciseId) {
+            block.exercises = block.exercises.filter(e => e.id !== rec.targetExerciseId);
+        } 
+        else if (rec.action === 'add' && rec.newExerciseId) {
+            const newEx: any = {
+                id: dbEx?.id || crypto.randomUUID(),
+                name: dbEx?.name_es || rec.newExerciseName || 'Nuevo Ejercicio',
+                sets: rec.recommendedSets || 3,
+                target: rec.recommendedReps || '10 reps',
+                type: 'weight',
+                visual: dbEx?.gif_url || ''
+            };
+            block.exercises.push(newEx);
+        }
+        else if (rec.action === 'swap' && rec.targetExerciseId && rec.newExerciseId) {
+            const exIndex = block.exercises.findIndex(e => e.id === rec.targetExerciseId);
+            if (exIndex !== -1) {
+                block.exercises[exIndex] = {
+                    ...block.exercises[exIndex],
+                    id: dbEx?.id || crypto.randomUUID(),
+                    name: dbEx?.name_es || rec.newExerciseName || 'Nuevo Ejercicio',
+                    sets: rec.recommendedSets || block.exercises[exIndex].sets || 3,
+                    target: rec.recommendedReps || block.exercises[exIndex].target || '10 reps',
+                    visual: dbEx?.gif_url || ''
+                };
+            }
+        }
+
+        newBlocks[blockIndex] = block;
+        await savePlanBlocks(newBlocks);
     };
 
     const getDaysAgo = (dateStr: string) => {
@@ -584,7 +632,8 @@ const Profile: React.FC<ProfileProps> = ({
                 <RoutineAuditModal 
                     auditResult={auditResult} 
                     isLoading={isAuditing} 
-                    onClose={() => setShowAuditModal(false)} 
+                    onClose={() => setShowAuditModal(false)}
+                    onApply={handleApplyRecommendation}
                 />
             )}
 
