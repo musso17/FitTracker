@@ -141,7 +141,8 @@ const Profile: React.FC<ProfileProps> = ({
 
     const groupedBlocks = {
         'En el Agua': planBlocks.filter(b => b.hasSurf || b.title.toLowerCase().includes('surf')),
-        'En el Gym': planBlocks.filter(b => !b.hasSurf && !b.title.toLowerCase().includes('surf') && !b.title.toLowerCase().includes('recuperación') && !b.title.toLowerCase().includes('yoga')),
+        'Artes Marciales': planBlocks.filter(b => b.hasMuayThai || b.title.toLowerCase().includes('muay thai') || b.title.toLowerCase().includes('striking')),
+        'En el Gym': planBlocks.filter(b => !b.hasSurf && !b.title.toLowerCase().includes('surf') && !b.hasMuayThai && !b.title.toLowerCase().includes('muay thai') && !b.title.toLowerCase().includes('striking') && !b.title.toLowerCase().includes('recuperación') && !b.title.toLowerCase().includes('yoga')),
         'Recuperación': planBlocks.filter(b => b.title.toLowerCase().includes('recuperación') || b.title.toLowerCase().includes('yoga'))
     };
 
