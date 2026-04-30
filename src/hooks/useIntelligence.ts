@@ -17,11 +17,40 @@ export function useIntelligence(logs: TrainingLog[], blocks: TrainingBlock[], st
 
     useEffect(() => {
         if (logs.length > 0) {
-            setIsLoadingAi(true);
-            generateAIAnalysis(logs, profile).then(res => {
-                if (res) setAiResult(res);
-                setIsLoadingAi(false);
-            });
+            const cacheKey = 'ai_analysis_cache';
+            const cachedDataStr = localStorage.getItem(cacheKey);
+            let shouldFetch = true;
+
+            if (cachedDataStr) {
+                try {
+                    const cachedData = JSON.parse(cachedDataStr);
+                    const now = new Date().getTime();
+                    const cacheTime = cachedData.timestamp || 0;
+                    const cacheLogCount = cachedData.logCount || 0;
+                    
+                    if (now - cacheTime < 86400000 && cacheLogCount === logs.length) {
+                        setAiResult(cachedData.result);
+                        shouldFetch = false;
+                    }
+                } catch (e) {
+                    console.error("Error parsing AI cache", e);
+                }
+            }
+
+            if (shouldFetch) {
+                setIsLoadingAi(true);
+                generateAIAnalysis(logs, profile).then(res => {
+                    if (res) {
+                        setAiResult(res);
+                        localStorage.setItem(cacheKey, JSON.stringify({
+                            timestamp: new Date().getTime(),
+                            logCount: logs.length,
+                            result: res
+                        }));
+                    }
+                    setIsLoadingAi(false);
+                });
+            }
         }
     }, [logs, profile]);
 
