@@ -469,6 +469,18 @@ const Dashboard: React.FC<DashboardProps> = ({
                                 highlightedGroup={highlightedGroup}
                             />
                         </div>
+                        
+                        {/* Legend minimal */}
+                        <div className="flex justify-center gap-6 pt-2">
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-amber-500" />
+                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Fuerza</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-cyan-500" />
+                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Surf</span>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Strongest Muscles Section */}
@@ -555,18 +567,6 @@ const Dashboard: React.FC<DashboardProps> = ({
                                     </div>
                                 )}
                             </div>
-                        </div>
-                    </div>
-
-                    {/* Legend minimal */}
-                    <div className="flex justify-center gap-6 pt-4">
-                        <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-amber-500" />
-                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Fuerza</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-cyan-500" />
-                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Surf</span>
                         </div>
                     </div>
                 </div>
