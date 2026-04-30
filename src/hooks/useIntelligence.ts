@@ -99,6 +99,7 @@ export function useIntelligence(logs: TrainingLog[], blocks: TrainingBlock[], st
             },
             insights,
             aiSummary: aiResult?.summary,
+            muscleFatigue: aiResult?.muscleFatigue,
             isLoadingAi
         };
     }, [logs, blocks, streak, aiResult, isLoadingAi]);

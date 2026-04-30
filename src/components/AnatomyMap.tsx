@@ -21,18 +21,13 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({ volume, highlightedGroup }) => 
     return volume[slug] || 0;
   };
 
-  const getHeatColor = (sets: number) => {
-    if (sets === 0) return '#f1f5f9'; // Inactivo
-    
-    // Fatigue Logic (Point 5)
-    if (sets > 15) return '#ef4444'; // Sobreentrenado (Rojo oscuro)
-    if (sets > 10) return '#fb7185'; // Fatigado (Coral)
-    
-    // Heatmap scaling (Point 1)
-    if (sets < 3) return '#F59E0B40';  // Sutil
-    if (sets < 6) return '#F59E0B80';  // Medio
-    if (sets < 10) return '#F59E0BBB'; // Fuerte
-    return '#F59E0B';                  // Pleno
+  const getHeatColor = (level: number) => {
+    if (level === 0) return '#f1f5f9'; // Recuperado (Gris)
+    if (level === 1) return '#fde047'; // Trabajo Leve (Amarillo)
+    if (level === 2) return '#f97316'; // Trabajo Medio (Naranja)
+    if (level === 3) return '#fb7185'; // Fatiga Alta (Coral)
+    if (level >= 4) return '#7f1d1d';  // Sobreentrenamiento (Rojo oscuro)
+    return '#f1f5f9';
   };
 
   const getOpacity = (slug: string, sets: number) => {
@@ -114,17 +109,24 @@ const AnatomyMap: React.FC<AnatomyMapProps> = ({ volume, highlightedGroup }) => 
             <div className="flex flex-col gap-1">
               <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{selectedMuscle.name}</span>
               <div className="flex items-center justify-between">
-                <span className="text-xl font-black text-slate-900">{Math.round(selectedMuscle.sets * 10) / 10} <span className="text-[10px] text-slate-400 uppercase">Sets</span></span>
+                <span className="text-xl font-black text-slate-900">
+                  {selectedMuscle.sets === 0 ? 'RECUPERADO' : 
+                   selectedMuscle.sets === 1 ? 'LEVE' :
+                   selectedMuscle.sets === 2 ? 'MEDIO' :
+                   selectedMuscle.sets === 3 ? 'ALTO' : 'EXTREMO'}
+                </span>
                 <div className={`w-2 h-2 rounded-full ${
-                  selectedMuscle.sets > 15 ? 'bg-red-600' :
-                  selectedMuscle.sets > 10 ? 'bg-rose-400' :
-                  selectedMuscle.sets > 0 ? 'bg-amber-400' : 'bg-slate-200'
+                  selectedMuscle.sets >= 4 ? 'bg-red-900' :
+                  selectedMuscle.sets === 3 ? 'bg-rose-400' :
+                  selectedMuscle.sets === 2 ? 'bg-orange-500' :
+                  selectedMuscle.sets === 1 ? 'bg-yellow-400' : 'bg-slate-200'
                 }`} />
               </div>
-              <span className="text-[10px] font-bold text-slate-500">
-                {selectedMuscle.sets > 15 ? '⛔️ Sobreentrenado' :
-                 selectedMuscle.sets > 10 ? '⚠️ Fatiga Alta' :
-                 selectedMuscle.sets > 0 ? '⚡️ En Proceso' : '💤 Recuperado'}
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
+                {selectedMuscle.sets >= 4 ? '⚠️ Sobreentrenamiento' :
+                 selectedMuscle.sets === 3 ? '🔥 Fatiga Alta' :
+                 selectedMuscle.sets === 2 ? '⚡️ Trabajo Medio' :
+                 selectedMuscle.sets === 1 ? '🌱 Recuperación Activa' : '💤 Descansado'}
               </span>
             </div>
           </motion.div>

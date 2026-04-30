@@ -16,6 +16,7 @@ export interface CoachInsight {
 export interface AIAnalysisResult {
     insights: CoachInsight[];
     summary: string;
+    muscleFatigue: Record<string, number>;
 }
 
 export async function generateAIAnalysis(logs: TrainingLog[], profile: any): Promise<AIAnalysisResult | null> {
@@ -78,12 +79,19 @@ ${catalogSummary}
 Instrucciones:
 1. Analiza si hay un estancamiento o un buen progreso (basado en el historial).
 2. Proporciona de 2 a 3 recomendaciones directas y concisas.
-3. El tono debe ser directo, profesional y motivador (estilo "coach").
-4. Si ves que siempre hace los mismos ejercicios, recomiéndale probar alguno del catálogo basándote en el patrón de movimiento.
+3. Evalúa la fatiga muscular en una escala de 0 a 4 (0: Recuperado, 1: Leve, 2: Medio, 3: Fatiga Alta, 4: Sobreentrenamiento) para los grupos: "push", "pull", "legs", "core". Basado en el volumen de entrenamiento de esos grupos.
+4. El tono debe ser directo, profesional y motivador (estilo "coach").
+5. Si ves que siempre hace los mismos ejercicios, recomiéndale probar alguno del catálogo basándote en el patrón de movimiento.
 
 Responde ÚNICAMENTE con un objeto JSON con el siguiente formato, sin markdown extra (\`\`\`json) ni texto fuera del JSON:
 {
   "summary": "Un breve párrafo (max 2 oraciones) resumiendo su estado actual.",
+  "muscleFatigue": {
+    "push": 0,
+    "pull": 0,
+    "legs": 0,
+    "core": 0
+  },
   "insights": [
     {
       "type": "success" | "warning" | "info",

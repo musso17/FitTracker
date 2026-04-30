@@ -465,20 +465,32 @@ const Dashboard: React.FC<DashboardProps> = ({
                         
                         <div className="relative min-h-[360px] flex items-center justify-center">
                             <AnatomyMap 
-                                volume={intel.muscleBalance.volume} 
+                                volume={intel.muscleFatigue || intel.muscleBalance.volume} 
                                 highlightedGroup={highlightedGroup}
                             />
                         </div>
                         
-                        {/* Legend minimal */}
-                        <div className="flex justify-center gap-6 pt-2">
-                            <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-amber-500" />
-                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Fuerza</span>
+                        {/* Legend minimal: AI Intensity Levels */}
+                        <div className="flex justify-center gap-4 pt-2 flex-wrap px-4">
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-200" />
+                                <span className="text-[7px] font-black text-slate-400 uppercase">Recuperado</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-cyan-500" />
-                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Surf</span>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-1.5 h-1.5 rounded-full bg-yellow-300" />
+                                <span className="text-[7px] font-black text-slate-400 uppercase">Leve</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                                <span className="text-[7px] font-black text-slate-400 uppercase">Medio</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                                <span className="text-[7px] font-black text-slate-400 uppercase">Fatiga</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-1.5 h-1.5 rounded-full bg-red-900" />
+                                <span className="text-[7px] font-black text-slate-400 uppercase">Extremo</span>
                             </div>
                         </div>
                     </div>
