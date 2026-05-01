@@ -16,7 +16,7 @@ export const useProfile = (userSession: any) => {
             try {
                 const { data } = await supabase
                     .from('profiles')
-                    .select('id, height, weight, strength_goals, notif_enabled, notif_time, notif_settings')
+                    .select('id, height, weight, strength_goals, notif_enabled, notif_time, notif_settings, sport_focus, main_objective')
                     .eq('id', userSession.user.id)
                     .single();
                 if (data) {
@@ -27,7 +27,9 @@ export const useProfile = (userSession: any) => {
                         strength_goals: data.strength_goals || {},
                         notif_enabled: !!data.notif_enabled,
                         notif_time: data.notif_time ? data.notif_time.slice(0, 5) : '07:00',
-                        notif_settings: data.notif_settings || { achievements: true, streak: true, summary: true, coach: true, hydration: true }
+                        notif_settings: data.notif_settings || { achievements: true, streak: true, summary: true, coach: true, hydration: true },
+                        sport_focus: data.sport_focus,
+                        main_objective: data.main_objective
                     });
                 } else {
                     // Si no hay datos, al menos setear el ID
@@ -53,7 +55,9 @@ export const useProfile = (userSession: any) => {
                     strength_goals: newProfile.strength_goals,
                     notif_enabled: newProfile.notif_enabled,
                     notif_time: newProfile.notif_time,
-                    notif_settings: newProfile.notif_settings
+                    notif_settings: newProfile.notif_settings,
+                    sport_focus: newProfile.sport_focus,
+                    main_objective: newProfile.main_objective
                 });
             if (!error) {
                 setProfile({ ...newProfile, id: userSession.user.id });

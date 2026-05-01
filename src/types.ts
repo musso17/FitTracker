@@ -68,6 +68,8 @@ export interface UserProfile {
         feelings: string[];
         equipment: string[];
     };
+    sport_focus?: 'muay_thai' | 'surf' | 'both';
+    main_objective?: 'mass' | 'performance' | 'fat_loss';
 }
 
 export interface NotificationSettings {

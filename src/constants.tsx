@@ -32,6 +32,7 @@ export const IconWeight = ({ size = 20, className = "" }) => <i className={`fas 
 export const IconAward = ({ size = 20, className = "" }) => <i className={`fas fa-award ${className}`} style={{ fontSize: size }}></i>;
 export const IconTrendingUp = ({ size = 20, className = "" }) => <i className={`fas fa-trending-up ${className}`} style={{ fontSize: size }}></i>;
 export const IconInfoCircle = ({ size = 20, className = "" }) => <i className={`fas fa-info-circle ${className}`} style={{ fontSize: size }}></i>;
+export const IconSeedling = ({ size = 20, className = "" }) => <i className={`fas fa-seedling ${className}`} style={{ fontSize: size }}></i>;
 
 export const ACHIEVEMENT_CATEGORIES = {
     strength: { label: 'Fuerza', color: 'slate', icon: IconWeight, bg: 'bg-slate-900', accent: 'text-slate-400' },

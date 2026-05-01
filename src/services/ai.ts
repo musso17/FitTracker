@@ -63,52 +63,64 @@ export async function generateAIAnalysis(logs: TrainingLog[], profile: any): Pro
             `- ${ex.name_es} (Patrón: ${ex.movement_pattern}, Músculo: ${ex.primary_muscle}): ${ex.technical_tip_es}`
         ).join('\n') || '';
 
+        // 3. Determinar Filosofía de Entrenamiento
+        const sportFocus = profile?.sport_focus || (profile?.id && profile.id.includes('ana') ? 'surf' : 'muay_thai');
+        const objective = profile?.main_objective || 'mass';
+        
+        const philosophies = {
+            muay_thai: `
+                Específicamente, entiendes la filosofía de entrenamiento de Marcelo (Home Strength + Muay Thai):
+                - Sentadilla Búlgara: Maximizar déficit y tiempo bajo tensión para estabilidad en un solo pie (pateos).
+                - Flexiones Arqueras/Déficit: Usar profundidad extra para reemplazar press de banca pesado.
+                - Remo Pendlay: Fuerza concéntrica pura desde el suelo para potencia en el Clinch.
+                - Extensiones Overhead: Estirar la cabeza larga del tríceps para el "snap" en golpes rectos.
+                - Pliometría: Transferencia elástica para rodillazos y salidas rápidas.
+            `,
+            surf: `
+                Específicamente, entiendes la biomecánica avanzada de Ana (Surf + Hipertrofia):
+                1. El Remado: Requiere extensión torácica constante (erectores, cuello) y tracción potente (dorsal ancho, deltoides anterior/medio, tríceps). La fatiga lumbar es el enemigo.
+                2. El Take-Off: Transición explosiva (push-up) seguida de flexión profunda de cadera (core y psoas) para llevar los pies bajo el centro de gravedad.
+                3. Riding: Trabajo excéntrico e isométrico masivo de cuádriceps, isquios y glúteos. Propiocepción en tobillos.
+                - Enfoque actual: Ganar masa muscular manteniendo la neuromecánica y prevención. Memoria muscular del Pop-Up.
+            `
+        };
+
+        const currentPhilosophy = sportFocus === 'surf' ? philosophies.surf : philosophies.muay_thai;
+
         // 3. Crear el prompt
         const prompt = `
-Eres un entrenador personal de élite, experto en biomecánica y sobrecarga progresiva. 
-Específicamente, entiendes la filosofía de entrenamiento de Marcelo (Home Strength + Muay Thai):
+Eres un entrenador personal de élite y experto en biomecánica. 
+${currentPhilosophy}
 
-Principios Biomecánicos de Marcelo:
-- Sentadilla Búlgara: Maximizar déficit y tiempo bajo tensión (3s bajada, 1s pausa) para estabilidad en un solo pie (pateos).
-- Flexiones Arqueras/Déficit: Usar peso corporal asimétrico o profundidad extra para reemplazar el Press de Banca pesado.
-- Remo Pendlay: Eliminar la inercia deteniendo el peso en el suelo en cada rep para fuerza concéntrica pura (Clinch).
-- Extensiones Overhead (Copa): Estirar la cabeza larga del tríceps para mejorar el "snap" en golpes rectos.
-- Pliometría: Transferencia elástica de fuerza para rodillazos con salto y salidas rápidas.
-- Estricto (Pared): Usar la pared en Curls de bíceps para anular el balanceo y maximizar el aislamiento con poco peso.
-
-Analiza el historial reciente de entrenamiento de este usuario y proporciona insights accionables.
+Analiza el historial reciente de entrenamiento y proporciona insights accionables.
 
 Perfil del usuario:
-- Peso corporal: ${profile?.weight || 'Desconocido'} kg
+- Peso: ${profile?.weight || 'N/A'} kg
+- Objetivo: ${objective === 'mass' ? 'Ganar masa muscular' : objective === 'performance' ? 'Mejorar rendimiento' : 'Pérdida de grasa'}
 
 Historial reciente (últimas 10 sesiones):
 ${recentLogs || 'Sin datos recientes'}
 
-Catálogo de ejercicios disponibles en el sistema con tips técnicos:
+Catálogo de ejercicios disponibles:
 ${catalogSummary}
 
 Instrucciones:
-1. Analiza si hay un estancamiento o un buen progreso (basado en el historial).
-2. Proporciona de 2 a 3 recomendaciones directas y concisas. Valora positivamente si Marcelo respeta los tiempos de pausa y la técnica estricta.
-3. Evalúa la fatiga muscular en una escala de 0 a 4 para los grupos: "push", "pull", "legs", "core".
-4. El tono debe ser directo, profesional y motivador (estilo "coach").
-5. Si ves que siempre hace los mismos ejercicios, recomiéndale probar alguno del catálogo basándote en el patrón de movimiento.
+1. Analiza el progreso o estancamiento.
+2. Da 2-3 recomendaciones directas y concisas alineadas con su filosofía (${sportFocus}). 
+3. Si el objetivo es Surf, prioriza la resistencia de espalda/hombros para remar y la explosividad del pop-up.
+4. Evalúa la fatiga muscular (0-4) para: "push", "pull", "legs", "core".
+5. El tono debe ser directo, profesional y motivador.
 
-Responde ÚNICAMENTE con un objeto JSON con el siguiente formato, sin markdown extra (\`\`\`json) ni texto fuera del JSON:
+Responde ÚNICAMENTE con un JSON con el formato:
 {
-  "summary": "Un breve párrafo (max 2 oraciones) resumiendo su estado actual.",
-  "muscleFatigue": {
-    "push": 0,
-    "pull": 0,
-    "legs": 0,
-    "core": 0
-  },
+  "summary": "Resumen corto (max 2 oraciones).",
+  "muscleFatigue": { "push": 0, "pull": 0, "legs": 0, "core": 0 },
   "insights": [
     {
       "type": "success" | "warning" | "info",
-      "title": "Título corto del insight",
-      "message": "Mensaje detallado (1-2 oraciones).",
-      "icon": "Un emoji representativo (ej: 🔥, ⚠️, 💡)"
+      "title": "Título corto",
+      "message": "Mensaje detallado.",
+      "icon": "Emoji"
     }
   ]
 }

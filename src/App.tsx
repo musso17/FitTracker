@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './utils/supabase';
 import {
-    IconHome, IconTarget, IconUser, ACTIVITY_TYPES, hapticFeedback
+    IconHome, IconTarget, IconUser, IconSeedling, ACTIVITY_TYPES, hapticFeedback
 } from './constants';
 import { ANA_PLAN, MARCELO_PLAN } from './plans';
 import { Toast } from './components/Common';
@@ -14,6 +14,7 @@ import Login from './components/Login';
 import ProfileModal from './components/ProfileModal';
 import RestTimer from './components/RestTimer';
 import ExerciseSelector from './components/ExerciseSelector';
+import Nutrition from './components/Nutrition';
 
 // Hooks
 import { useAuth } from './hooks/useAuth';
@@ -23,6 +24,7 @@ import { usePlan } from './hooks/usePlan';
 import { useActiveSessionState } from './hooks/useActiveSession';
 import { useNotifications } from './hooks/useNotifications';
 import { useIntelligence } from './hooks/useIntelligence';
+import { useNutrition } from './hooks/useNutrition';
 
 export default function App() {
     const [activeTab, setActiveTab] = useState('home');
@@ -62,6 +64,9 @@ export default function App() {
 
     // --- INTELLIGENCE ---
     const intel = useIntelligence(logs, PLAN_BLOCKS, currentStreak, profile);
+
+    // --- NUTRITION ---
+    const nutrition = useNutrition(logs, PLAN_BLOCKS, profile);
 
     // --- REFRESH SERVICE WORKER ---
     useEffect(() => {
@@ -312,6 +317,18 @@ export default function App() {
                             currentStreak={currentStreak}
                         />
                     )}
+                    {activeTab === 'nutrition' && (
+                        <Nutrition
+                            dayType={nutrition.dayType}
+                            dayProfile={nutrition.dayProfile}
+                            dailyMeals={nutrition.dailyMeals}
+                            superfoods={nutrition.superfoods}
+                            superfoodOfTheDay={nutrition.superfoodOfTheDay}
+                            weeklyPlan={nutrition.weeklyPlan}
+                            isLoadingPlan={nutrition.isLoadingPlan}
+                            refreshWeeklyPlan={nutrition.refreshWeeklyPlan}
+                        />
+                    )}
                     {activeTab === 'recap' && <Recap sessionRecap={sessionRecap} currentStreak={currentStreak} setActiveTab={setActiveTab} setSessionRecap={setSessionRecap} />}
                 </main>
 
@@ -320,6 +337,7 @@ export default function App() {
                         <div className="max-w-md mx-auto flex justify-between items-center">
                             {[
                                 { id: 'home', label: 'Plan', icon: IconHome },
+                                { id: 'nutrition', label: 'Nutri', icon: IconSeedling },
                                 { id: 'dashboard', label: 'Metas', icon: IconTarget },
                                 { id: 'profile', label: 'Perfil', icon: IconUser }
                             ].map((tab) => {

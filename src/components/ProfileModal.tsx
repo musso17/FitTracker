@@ -48,6 +48,45 @@ const ProfileModal: React.FC<ProfileModalProps> = ({
                     </div>
                 </div>
 
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Especialidad</label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {[
+                                { id: 'surf', label: 'Surf' },
+                                { id: 'muay_thai', label: 'Muay Thai' }
+                            ].map(sport => (
+                                <button
+                                    key={sport.id}
+                                    onClick={() => setProfile({...profile, sport_focus: sport.id})}
+                                    className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all ${profile.sport_focus === sport.id ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-slate-50 border-slate-100 text-slate-400'}`}
+                                >
+                                    {sport.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Objetivo Principal</label>
+                        <div className="grid grid-cols-3 gap-2">
+                            {[
+                                { id: 'mass', label: 'Masa' },
+                                { id: 'performance', label: 'Poder' },
+                                { id: 'fat_loss', label: 'Grasa' }
+                            ].map(obj => (
+                                <button
+                                    key={obj.id}
+                                    onClick={() => setProfile({...profile, main_objective: obj.id})}
+                                    className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 transition-all ${profile.main_objective === obj.id ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-slate-50 border-slate-100 text-slate-400'}`}
+                                >
+                                    {obj.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
                 <div className="space-y-3 pt-4">
                     <button 
                         onClick={() => {
