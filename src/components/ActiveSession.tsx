@@ -185,8 +185,13 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({
     }, [gymProgress]);
 
     const onFinishClick = () => {
-        if (totals.completed === 0) {
-            if (confirm('No has completado ninguna serie todavía. ¿Quieres terminar la sesión de todas formas?')) {
+        const hasActivity = 
+            (activeBlock.hasSurf && surfForm.duration > 0) || 
+            (activeBlock.hasMuayThai && muayThaiForm.duration > 0) || 
+            (activeBlock.activityType && activityForm.duration > 0);
+
+        if (totals.completed === 0 && !hasActivity) {
+            if (confirm('No has completado ninguna serie o actividad todavía. ¿Quieres terminar la sesión de todas formas?')) {
                 handleFinishSession();
             }
         } else {

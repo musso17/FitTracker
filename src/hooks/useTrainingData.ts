@@ -26,7 +26,8 @@ export const useTrainingData = (userSession: any, profile: any, userKey: string,
                     surfData: log.surfData,
                     muayThaiData: log.muayThaiData || null,
                     gymData: log.gymData || null,
-                    activityData: log.activityData || null
+                    activityData: log.activityData || null,
+                    user_id: log.user_id || null
                 })));
             }
         } catch (e) {
@@ -95,7 +96,10 @@ export const useTrainingData = (userSession: any, profile: any, userKey: string,
 
     const currentStreak = useMemo(() => {
         const isAna = userKey === 'ana';
-        const filteredLogs = logs.filter(l => isAna ? l.blockId.startsWith('ana_') : l.blockId.startsWith('mar_'));
+        const filteredLogs = logs.filter(l => {
+            if (l.user_id) return l.user_id === userSession?.user?.id;
+            return isAna ? l.blockId.startsWith('ana_') : l.blockId.startsWith('mar_');
+        });
         if (filteredLogs.length === 0) return 0;
         
         const today = new Date(); today.setHours(0,0,0,0);
@@ -123,7 +127,10 @@ export const useTrainingData = (userSession: any, profile: any, userKey: string,
 
     const stats = useMemo(() => {
         const isAna = userKey === 'ana';
-        const filteredLogs = logs.filter(l => isAna ? l.blockId.startsWith('ana_') : l.blockId.startsWith('mar_'));
+        const filteredLogs = logs.filter(l => {
+            if (l.user_id) return l.user_id === userSession?.user?.id;
+            return isAna ? l.blockId.startsWith('ana_') : l.blockId.startsWith('mar_');
+        });
         
         const workoutsThisWeek = filteredLogs.filter(l => isWithinCurrentWeek(l.date)).length;
         const totalSurfMins = filteredLogs.reduce((acc, curr) => (curr.surfData && isWithinCurrentWeek(curr.date)) ? acc + curr.surfData.duration : acc, 0);

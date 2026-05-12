@@ -353,7 +353,7 @@ const Profile: React.FC<ProfileProps> = ({
                 ))}
 
                 <button 
-                    onClick={() => setEditingBlock({ id: crypto.randomUUID(), title: '', color: 'slate', iconId: 'dumbbell', exercises: [], _isNew: true })} 
+                    onClick={() => setEditingBlock({ id: `${userKey}_${crypto.randomUUID()}`, title: '', color: 'slate', iconId: 'dumbbell', exercises: [], _isNew: true })} 
                     className="w-full border-2 border-dashed border-slate-200 rounded-[2rem] py-5 flex items-center justify-center gap-2 text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-all font-black text-xs uppercase tracking-widest bg-slate-50/50"
                 >
                     <IconPlus size={18} /> Nuevo Bloque

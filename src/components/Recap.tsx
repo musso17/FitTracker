@@ -55,6 +55,15 @@ const Recap: React.FC<RecapProps> = ({
                     </div>
                 )}
 
+                {sessionRecap.activitySets > 0 && (
+                    <div className="bg-gradient-to-br from-orange-500 to-rose-600 rounded-2xl p-6 text-white shadow-xl shadow-orange-500/30 animate-in slide-in-from-right duration-500" style={{ animationDelay: '200ms' }}>
+                        <span className="text-3xl block mb-1">🔥</span>
+                        <span className="text-4xl font-black tracking-tight block">+{sessionRecap.activitySets}</span>
+                        <span className="text-sm font-bold text-orange-200 uppercase tracking-wider">Series Equivalentes</span>
+                        <p className="text-xs text-orange-100 mt-1">Impacto: {sessionRecap.activeMuscles?.join(', ')}</p>
+                    </div>
+                )}
+
                 {/* Streak (Improved) */}
                 {currentStreak > 0 && (
                     <div className="relative w-full animate-in zoom-in duration-700 delay-300">

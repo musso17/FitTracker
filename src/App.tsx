@@ -128,18 +128,35 @@ export default function App() {
         if (recapTonelaje > 1000) achievements.push("🐘 Miembro del Club de la Tonelada");
 
         let recapStamina = 0;
+        let activitySets = 0;
+        let activeMuscles: string[] = [];
+
         if (session.activeBlock.hasSurf) {
             const fm: any = { struggle: 1.3, good: 1.0, awesome: 1.15 };
             recapStamina += Math.round(session.surfForm.duration * (fm[session.surfForm.feeling] || 1));
+            
+            // Calculate equivalent sets for Surf
+            const surfVolume = session.surfForm.duration / 10;
+            activitySets += Math.round(surfVolume * 2.5); // back, pull, core, etc.
+            activeMuscles = ['Espalda', 'Hombros', 'Core'];
         }
         if (session.activeBlock.hasMuayThai) {
             const mm: any = { ligera: 0.8, media: 1.0, exigente: 1.4 };
             recapStamina += Math.round(session.muayThaiForm.duration * (mm[session.muayThaiForm.intensity] || 1));
+            
+            // Calculate equivalent sets for Muay Thai
+            const mtVolume = session.muayThaiForm.duration / 10;
+            activitySets += Math.round(mtVolume * 3.5); // core, legs, push, delts
+            activeMuscles = ['Core', 'Piernas', 'Hombros'];
         }
         if (session.activeBlock.activityType && !session.activeBlock.hasSurf && !session.activeBlock.hasMuayThai) {
             const ad = ACTIVITY_TYPES.find(a => a.id === session.activeBlock.activityType);
             const so = ad?.intensityOptions.find(o => o.id === session.activityForm.intensity);
             if (ad && so) recapStamina += Math.round(session.activityForm.duration * (so.kcalPerMin / 10));
+            
+            const activityVolume = session.activityForm.duration / 10;
+            activitySets += Math.round(activityVolume * 2);
+            activeMuscles = ['Cardio', 'Piernas'];
         }
         const completedSetsCount = Object.values(session.gymProgress).flat().filter((s: any) => s?.completed).length;
         recapStamina += completedSetsCount * 5;
@@ -149,6 +166,8 @@ export default function App() {
             tonelaje: recapTonelaje,
             stamina: recapStamina,
             completedSets: completedSetsCount,
+            activitySets,
+            activeMuscles,
             achievements
         };
     };

@@ -34,7 +34,7 @@ const Home: React.FC<HomeProps> = ({
     const isEvening = now.getHours() >= 18;
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const todayLogs = logs.filter(l => l.date === todayStr);
-    const hasTrainedToday = todayLogs.some(l => l.blockId.startsWith('ana_') || l.blockId.startsWith('mar_'));
+    const hasTrainedToday = todayLogs.length > 0;
 
     const wellness = wellnessOverride || calculateRecoveryScore(logs, currentStreak);
 
